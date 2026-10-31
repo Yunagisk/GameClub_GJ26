@@ -1,0 +1,37 @@
+# Unity
+**/Library/
+**/Temp/
+**/[Oo]bj/
+**/Build/
+**/Builds/
+**/Logs/
+**/UserSettings/
+**/MemoryCaptures/
+**/Crashes/
+
+# Compiled output and logs
+**/[Bb]in/
+*.log
+
+# Local art previews, generation history and temporary check binaries.
+/output/
+
+# Visual Studio / Rider
+**/.vs/
+**/.idea/
+*.csproj
+# This is a hand-written check project, not a generated Unity project.
+!/Tools/MapChecks/MapChecks.csproj
+!/Tools/BattleUiChecks/BattleUiChecks.csproj
+!/Tools/EnemyAnimationChecks/EnemyAnimationChecks.csproj
+!/Tools/WeaponSkillChecks/WeaponSkillChecks.csproj
+!/Tools/EncounterBalanceSimulation/EncounterBalanceChecks.csproj
+!/Tools/ItemChecks/ItemChecks.csproj
+*.sln
+*.user
+*.userprefs
+
+# 系统文件
+.DS_Store
+Thumbs.db
+desktop.ini
