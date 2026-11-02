@@ -1,0 +1,154 @@
+{
+    "name": "PlayerControls",
+    "maps": [
+        {
+            "id": "6f0518cd-a131-4fd8-921e-7da04fb3ed4d",
+            "name": "Gameplay",
+            "actions": [
+                {
+                    "id": "6bb7ee43-7307-447b-a064-804340d11412",
+                    "name": "Move",
+                    "type": "Value",
+                    "expectedControlType": "Axis",
+                    "initialStateCheck": true
+                },
+                {
+                    "id": "32af87f3-cce0-461b-a5a6-621d7dbbb845",
+                    "name": "Jump",
+                    "type": "Button",
+                    "expectedControlType": "Button",
+                    "initialStateCheck": false
+                },
+                {
+                    "id": "5fdcc6be-c8be-4b6f-b20a-656bd941df8f",
+                    "name": "Dash",
+                    "type": "Button",
+                    "expectedControlType": "Button",
+                    "initialStateCheck": false
+                },
+                {
+                    "id": "2dd07ccc-a10f-45e1-9aa8-1523f570c080",
+                    "name": "ExchangeGravity",
+                    "type": "Button",
+                    "expectedControlType": "Button",
+                    "initialStateCheck": false
+                },
+                {
+                    "id": "60fc499d-d39f-4160-9e9a-5612d9fb7fde",
+                    "name": "Interact",
+                    "type": "Button",
+                    "expectedControlType": "Button",
+                    "initialStateCheck": false
+                },
+                {
+                    "id": "3a5d5104-b0d8-4c39-9bdf-0bd84450c36d",
+                    "name": "Point",
+                    "type": "Value",
+                    "expectedControlType": "Vector2",
+                    "initialStateCheck": true
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "AD",
+                    "id": "3db05ea8-f886-4ccb-a50e-2652b2e6cce3",
+                    "path": "1DAxis",
+                    "action": "Move",
+                    "isComposite": true,
+                    "isPartOfComposite": false,
+                    "groups": ""
+                },
+                {
+                    "name": "negative",
+                    "id": "c751fe1f-a30e-4646-ac56-4453ed2a52cc",
+                    "path": "<Keyboard>/a",
+                    "action": "Move",
+                    "isComposite": false,
+                    "isPartOfComposite": true,
+                    "groups": "KeyboardMouse"
+                },
+                {
+                    "name": "positive",
+                    "id": "eef5912c-ba10-489a-94a7-210f5b23308b",
+                    "path": "<Keyboard>/d",
+                    "action": "Move",
+                    "isComposite": false,
+                    "isPartOfComposite": true,
+                    "groups": "KeyboardMouse"
+                },
+                {
+                    "name": "",
+                    "id": "5525dcab-70ea-4bf9-913c-fe5842d7af18",
+                    "path": "<Keyboard>/w",
+                    "action": "Jump",
+                    "isComposite": false,
+                    "isPartOfComposite": false,
+                    "groups": "KeyboardMouse"
+                },
+                {
+                    "name": "",
+                    "id": "410ce65c-027b-4919-be9f-5bc9ad42f94a",
+                    "path": "<Keyboard>/leftShift",
+                    "action": "Dash",
+                    "isComposite": false,
+                    "isPartOfComposite": false,
+                    "groups": "KeyboardMouse"
+                },
+                {
+                    "name": "",
+                    "id": "cd7336bb-ac2e-492a-9a5a-1939963c6f85",
+                    "path": "<Keyboard>/rightShift",
+                    "action": "Dash",
+                    "isComposite": false,
+                    "isPartOfComposite": false,
+                    "groups": "KeyboardMouse"
+                },
+                {
+                    "name": "",
+                    "id": "df9ead6f-2166-44c0-a096-cc2bc260c2da",
+                    "path": "<Mouse>/rightButton",
+                    "action": "ExchangeGravity",
+                    "isComposite": false,
+                    "isPartOfComposite": false,
+                    "groups": "KeyboardMouse"
+                },
+                {
+                    "name": "",
+                    "id": "d5a7dad2-7f52-4481-8502-dd531916a73c",
+                    "path": "<Keyboard>/f",
+                    "action": "Interact",
+                    "isComposite": false,
+                    "isPartOfComposite": false,
+                    "groups": "KeyboardMouse"
+                },
+                {
+                    "name": "",
+                    "id": "3af99b46-1726-4f74-97c3-57dce1253819",
+                    "path": "<Mouse>/position",
+                    "action": "Point",
+                    "isComposite": false,
+                    "isPartOfComposite": false,
+                    "groups": "KeyboardMouse"
+                }
+            ]
+        }
+    ],
+    "controlSchemes": [
+        {
+            "name": "KeyboardMouse",
+            "bindingGroup": "KeyboardMouse",
+            "devices": [
+                {
+                    "devicePath": "<Keyboard>",
+                    "isOptional": false,
+                    "isOR": false
+                },
+                {
+                    "devicePath": "<Mouse>",
+                    "isOptional": false,
+                    "isOR": false
+                }
+            ]
+        }
+    ]
+}
