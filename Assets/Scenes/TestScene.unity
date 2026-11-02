@@ -489,7 +489,7 @@ Transform:
   m_GameObject: {fileID: 1132341729}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 12.5522, y: -4.79, z: 0}
+  m_LocalPosition: {x: 11.64, y: -9.43, z: 0}
   m_LocalScale: {x: 44.13159, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -691,7 +691,7 @@ Transform:
   m_GameObject: {fileID: 1551080385}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 12.4457, y: 4.92, z: 0}
+  m_LocalPosition: {x: 12.4457, y: 1.42, z: 0}
   m_LocalScale: {x: 43.91704, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -719,6 +719,7 @@ GameObject:
   - component: {fileID: 1689651212}
   - component: {fileID: 1689651224}
   - component: {fileID: 1689651225}
+  - component: {fileID: 1689651226}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -783,7 +784,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gravityScale: 3.5
-  gravityExchangeCD: 0.25
+  gravityExchangeCD: 0.3
   startsUpward: 0
 --- !u!114 &1689651216
 MonoBehaviour:
@@ -1023,6 +1024,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sprite: {fileID: 1689651222}
   animator: {fileID: 0}
+--- !u!114 &1689651226
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1689651211}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf392ab14578478985a367706c74b608, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  markerSprite: {fileID: 21300000, guid: 30a3d3a4c2264440828b8c4906f907e2, type: 3}
 --- !u!1 &1821700000
 GameObject:
   m_ObjectHideFlags: 0
@@ -1151,7 +1165,7 @@ Transform:
   m_GameObject: {fileID: 1821700000}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.21, y: 3.02, z: 0}
+  m_LocalPosition: {x: -1.21, y: -0.4, z: 0}
   m_LocalScale: {x: 2.1, y: 2.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1197,7 +1211,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gravityScale: 3.5
-  gravityExchangeCD: 0.25
+  gravityExchangeCD: 0.3
   startsUpward: 1
 --- !u!114 &1821700006
 MonoBehaviour:
