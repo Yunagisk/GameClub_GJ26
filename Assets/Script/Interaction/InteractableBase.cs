@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace GameClub.Player
 {
-    public abstract class InteractableBase : MonoBehaviour
+    public abstract class InteractableBase : MonoBehaviour, ICheckpointState
     {
         private static readonly List<InteractableBase> activeTargets = new List<InteractableBase>();
         public bool interactableLocked = false;
@@ -52,6 +52,35 @@ namespace GameClub.Player
         }
 
         protected abstract void OnInteract();
+
+        [System.Serializable]
+        protected class InteractionState
+        {
+            public bool locked;
+            public float remaining;
+        }
+
+        protected void CaptureInteraction(InteractionState state)
+        {
+            state.locked = interactableLocked;
+            state.remaining = Mathf.Max(0f, nextInteractionTime - Time.time);
+        }
+
+        protected void RestoreInteraction(InteractionState state)
+        {
+            interactableLocked = state.locked;
+            nextInteractionTime = Time.time + state.remaining;
+        }
+
+        public virtual string CaptureState()
+        {
+            var state = new InteractionState();
+            CaptureInteraction(state);
+            return JsonUtility.ToJson(state);
+        }
+
+        public virtual void RestoreState(string data) => RestoreInteraction(JsonUtility.FromJson<InteractionState>(data));
+        public virtual void RefreshState() { }
 
 #if UNITY_EDITOR
         private void OnDrawGizmosSelected()

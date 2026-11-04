@@ -39,9 +39,12 @@ namespace GameClub.Player
 
         private void OnDisable()
         {
-            input.InteractPressed -= Interact;
-            input.SelectPressed -= SelectTarget;
-            input.ExchangePressed -= Exchange;
+            if (input)
+            {
+                input.InteractPressed -= Interact;
+                input.SelectPressed -= SelectTarget;
+                input.ExchangePressed -= Exchange;
+            }
             Hovered = null;
             ClearSelection();
         }

@@ -17,6 +17,13 @@ namespace GameClub.Player
 
         private void Awake() => body = GetComponent<Rigidbody2D>();
 
+        public void ResetForRespawn()
+        {
+            airDashesUsed = 0;
+            nextDash = 0f;
+            retainNextStep = false;
+        }
+
         public void Prepare(bool grounded, float speedLimit)
         {
             if (grounded) airDashesUsed = 0;

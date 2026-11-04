@@ -16,6 +16,8 @@ namespace GameClub.Player
 
         private void Awake() => body = GetComponent<Rigidbody2D>();
 
+        public void ResetForRespawn() => Facing = 1;
+
         public float SpeedLimit(bool grounded) => grounded ? groundMaxSpeed : airMaxSpeed;
 
         public void Step(int axis, bool grounded)

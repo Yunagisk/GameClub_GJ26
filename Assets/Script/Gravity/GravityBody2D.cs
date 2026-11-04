@@ -3,7 +3,7 @@ using UnityEngine;
 namespace GameClub.Player
 {
     [DisallowMultipleComponent, RequireComponent(typeof(Rigidbody2D))]
-    public sealed class GravityBody2D : MonoBehaviour, IGravityExchange
+    public sealed class GravityBody2D : MonoBehaviour, IGravityExchange, ICheckpointState
     {
         [Min(0.01f)] public float gravityScale = 3.5f;
         [Min(0f)] public float gravityExchangeCD = 0.3f;
@@ -18,6 +18,12 @@ namespace GameClub.Player
 
         private void Awake()
         {
+            Initialize();
+        }
+
+        private void Initialize()
+        {
+            if (body) return;
             body = GetComponent<Rigidbody2D>();
             gravityDir = startsUpward ? Vector2.up : Vector2.down;
             SetMultiplier(1f);
@@ -47,6 +53,43 @@ namespace GameClub.Player
             gravityDir = direction;
             SetMultiplier(multiplier);
             body.WakeUp();
+        }
+
+        [System.Serializable]
+        private class State
+        {
+            public Vector2 direction;
+            public float scale, multiplier, remaining;
+        }
+
+        public string CaptureState()
+        {
+            Initialize();
+            return JsonUtility.ToJson(new State
+            {
+                direction = gravityDir, scale = gravityScale, multiplier = multiplier,
+                remaining = Mathf.Max(0f, cooldownUntil - Time.time)
+            });
+        }
+
+        public void RestoreState(string data)
+        {
+            Initialize();
+            var state = JsonUtility.FromJson<State>(data);
+            gravityDir = state.direction;
+            gravityScale = state.scale;
+            cooldownUntil = Time.time + state.remaining;
+            SetMultiplier(state.multiplier);
+        }
+
+        public void RefreshState() { }
+
+        public void ResetForRespawn()
+        {
+            Initialize();
+            gravityDir = Vector2.down;
+            cooldownUntil = 0f;
+            SetMultiplier(1f);
         }
     }
 }
