@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -13,12 +14,18 @@ namespace GameClub.Player
         [SerializeField] private Collider2D actorCollider;
         [SerializeField] private LayerMask pickLayers = (1 << 8) | (1 << 9);
         public Collider2D Hovered { get; private set; }
+        public Behaviour SelectedTarget => selected;
+        public event Action Interacted;
         private Behaviour selected;
+        private Collider2D selectedCollider;
         private GravitySelectionMarker marker;
         private readonly List<RaycastResult> uiHits = new List<RaycastResult>();
-
+        private readonly Plane[] frustumPlanes = new Plane[6];
         private PlayerInputReader input;
         private IGravityExchange player;
+
+        private bool Blocked => GameClub.Puzzles.PuzzleSession.Instance
+            && GameClub.Puzzles.PuzzleSession.Instance.InputBlocked;
 
         private void Awake()
         {
@@ -26,12 +33,15 @@ namespace GameClub.Player
             if (!actorCollider) actorCollider = GetComponent<Collider2D>();
             player = GetComponent<IGravityExchange>();
             marker = GetComponent<GravitySelectionMarker>();
-            if (!pickCamera) pickCamera = GetComponent<PlayerInput>().camera;
+            var playerInput = GetComponent<PlayerInput>();
+            if (!pickCamera && playerInput) pickCamera = playerInput.camera;
             if (!pickCamera) pickCamera = Camera.main;
         }
 
         private void OnEnable()
         {
+            if (!input) input = GetComponent<PlayerInputReader>();
+            if (!input) return;
             input.InteractPressed += Interact;
             input.SelectPressed += SelectTarget;
             input.ExchangePressed += Exchange;
@@ -39,17 +49,21 @@ namespace GameClub.Player
 
         private void OnDisable()
         {
-            input.InteractPressed -= Interact;
-            input.SelectPressed -= SelectTarget;
-            input.ExchangePressed -= Exchange;
+            if (input)
+            {
+                input.InteractPressed -= Interact;
+                input.SelectPressed -= SelectTarget;
+                input.ExchangePressed -= Exchange;
+            }
             Hovered = null;
             ClearSelection();
         }
 
         private void Update()
         {
-            if (!ReferenceEquals(selected, null) && (!selected || !selected.isActiveAndEnabled))
+            if (!ReferenceEquals(selected, null) && (!selected || !selected.isActiveAndEnabled || !SelectedIsVisible()))
                 ClearSelection();
+            if (Blocked) { Hovered = null; return; }
             Pick();
         }
 
@@ -71,7 +85,6 @@ namespace GameClub.Player
         {
             var events = EventSystem.current;
             if (!events) return false;
-            // Query at this click's position; the input module's cached hover can be one frame old.
             var pointer = new PointerEventData(events) { position = input.PointerPosition };
             events.RaycastAll(pointer, uiHits);
             foreach (var hit in uiHits)
@@ -81,32 +94,43 @@ namespace GameClub.Player
 
         private void SelectTarget()
         {
-            if (PointerHitsUI()) return;
+            if (Blocked || PointerHitsUI()) return;
             Pick();
             var target = Hovered ? Hovered.GetComponentInParent<IGravityExchange>() : null;
             if (target is Behaviour behaviour && behaviour.isActiveAndEnabled && !ReferenceEquals(target, player))
             {
                 selected = behaviour;
+                selectedCollider = Hovered;
                 marker.Show(selected, Hovered);
             }
             else ClearSelection();
         }
 
-        private void ClearSelection()
+        public void ClearSelection()
         {
             selected = null;
+            selectedCollider = null;
             if (marker) marker.Hide();
+        }
+
+        private bool SelectedIsVisible()
+        {
+            if (!pickCamera || !selectedCollider || !selectedCollider.isActiveAndEnabled) return false;
+            GeometryUtility.CalculateFrustumPlanes(pickCamera, frustumPlanes);
+            return GeometryUtility.TestPlanesAABB(frustumPlanes, selectedCollider.bounds);
         }
 
         private void Interact()
         {
+            if (Blocked) return;
             var target = InteractableBase.FindNearest(actorCollider);
-            if (target) target.TryInteract(actorCollider);
+            if (target && target.TryInteract(actorCollider)) Interacted?.Invoke();
         }
 
         private void Exchange()
         {
-            if (PointerHitsUI() || !selected || !selected.isActiveAndEnabled || player.isExchangeCooldown) return;
+            if (Blocked || PointerHitsUI() || !selected || !selected.isActiveAndEnabled || player.isExchangeCooldown) return;
+            if (!SelectedIsVisible()) { ClearSelection(); return; }
             var target = (IGravityExchange)selected;
             if (!target.isExchangeCooldown) player.ExchangeGravity(target);
         }

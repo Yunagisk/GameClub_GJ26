@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace GameClub.Player
@@ -10,6 +11,7 @@ namespace GameClub.Player
         [Min(0)] public int airDashCountMax = 1;
         [Range(0f, 1f)] public float dashMomentumRetention = 0.85f;
         public bool dashCanOverwriteSpeed = true;
+        public event Action Dashed;
         private int airDashesUsed;
         private float nextDash;
         private bool retainNextStep;
@@ -38,6 +40,7 @@ namespace GameClub.Player
             if (!grounded) airDashesUsed++;
             nextDash = Time.fixedTime + dashCooldown;
             retainNextStep = true;
+            Dashed?.Invoke();
         }
     }
 }
