@@ -6,7 +6,7 @@ namespace GameClub.Player
     public sealed class GravityBody2D : MonoBehaviour, IGravityExchange
     {
         [Min(0.01f)] public float gravityScale = 3.5f;
-        [Min(0f)] public float gravityExchangeCD = 0.25f;
+        [Min(0f)] public float gravityExchangeCD = 0.3f;
         public bool startsUpward;
 
         public Vector2 gravityDir { get; private set; }

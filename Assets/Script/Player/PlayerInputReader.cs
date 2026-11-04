@@ -7,11 +7,12 @@ namespace GameClub.Player
     [DisallowMultipleComponent, RequireComponent(typeof(PlayerInput))]
     public sealed class PlayerInputReader : MonoBehaviour
     {
-        private InputAction move, jump, dash, pointer, interact, exchange;
+        private InputAction move, jump, dash, pointer, interact, select, exchange;
         private bool jumpPressed, dashPressed;
         private int dashAxis;
 
         public event Action InteractPressed;
+        public event Action SelectPressed;
         public event Action ExchangePressed;
         public Vector2 PointerPosition => pointer == null ? Vector2.zero : pointer.ReadValue<Vector2>();
 
@@ -32,15 +33,18 @@ namespace GameClub.Player
             dash = actions.FindAction("Gameplay/Dash", true);
             pointer = actions.FindAction("Gameplay/Point", true);
             interact = actions.FindAction("Gameplay/Interact", true);
+            select = actions.FindAction("Gameplay/SelectGravityTarget", true);
             exchange = actions.FindAction("Gameplay/ExchangeGravity", true);
             jump.performed += OnJump;
             dash.performed += OnDash;
             interact.performed += OnInteract;
+            select.performed += OnSelect;
             exchange.performed += OnExchange;
         }
 
         private void OnJump(InputAction.CallbackContext context) => jumpPressed = true;
         private void OnInteract(InputAction.CallbackContext context) => InteractPressed?.Invoke();
+        private void OnSelect(InputAction.CallbackContext context) => SelectPressed?.Invoke();
         private void OnExchange(InputAction.CallbackContext context) => ExchangePressed?.Invoke();
         private void OnDash(InputAction.CallbackContext context)
         {
@@ -61,6 +65,7 @@ namespace GameClub.Player
             if (jump != null) jump.performed -= OnJump;
             if (dash != null) dash.performed -= OnDash;
             if (interact != null) interact.performed -= OnInteract;
+            if (select != null) select.performed -= OnSelect;
             if (exchange != null) exchange.performed -= OnExchange;
             jumpPressed = dashPressed = false;
         }

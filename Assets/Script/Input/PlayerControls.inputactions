@@ -46,6 +46,13 @@
                     "type": "Value",
                     "expectedControlType": "Vector2",
                     "initialStateCheck": true
+                },
+                {
+                    "id": "dc8bebd5-8efe-4ef9-9508-259825d4c4d1",
+                    "name": "SelectGravityTarget",
+                    "type": "Button",
+                    "expectedControlType": "Button",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -126,6 +133,15 @@
                     "id": "3af99b46-1726-4f74-97c3-57dce1253819",
                     "path": "<Mouse>/position",
                     "action": "Point",
+                    "isComposite": false,
+                    "isPartOfComposite": false,
+                    "groups": "KeyboardMouse"
+                },
+                {
+                    "name": "",
+                    "id": "6c143c08-42e7-4cb0-9d17-fe5db0bafc30",
+                    "path": "<Mouse>/leftButton",
+                    "action": "SelectGravityTarget",
                     "isComposite": false,
                     "isPartOfComposite": false,
                     "groups": "KeyboardMouse"

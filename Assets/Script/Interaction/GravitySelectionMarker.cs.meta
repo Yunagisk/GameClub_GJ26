@@ -1,0 +1,12 @@
+fileFormatVersion: 2
+guid: bf392ab14578478985a367706c74b608
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - markerSprite: {fileID: 21300000, guid: 30a3d3a4c2264440828b8c4906f907e2, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

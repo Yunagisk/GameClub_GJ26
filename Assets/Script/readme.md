@@ -28,7 +28,7 @@
 | dashMomentumRetention | 0.85 | 爆发后一物理步保留的超出常规速度上限部分的比例 |
 | dashCanOverwriteSpeed | true | 开启时覆盖水平速度，关闭时沿冲刺方向叠加 |
 | gravityScale | 3.5 | 参与者的基础重力倍率（正值） |
-| gravityExchangeCD | 0.25 秒 | 每个交换参与者自己的冷却时间 |
+| gravityExchangeCD | 0.7 秒 | 每个交换参与者自己的冷却时间 |
 | startsUpward | 玩家 false，示例箱 true | 初始方向分别为 (0, -1) 和 (0, 1) |
 | interactableLocked | false | 锁定此物件的 F 交互 |
 | interactionRadius | 2 世界单位 | 玩家主碰撞体接触或进入此圆时允许按 F；半径独立于物件缩放 |
@@ -45,8 +45,8 @@
 
 | 路径（相对本目录） | 职责 |
 |---|---|
-| Input/PlayerControls.inputactions | 移动、跳跃、冲刺、F、右键以及鼠标屏幕坐标 Point 的绑定 |
-| Player/PlayerInputReader.cs | 从所属 PlayerInput 的动作实例读取轴和 W 持有状态，缓存跳跃和冲刺按下边沿供物理步消费，F 和右键通过独立 performed 事件分发 |
+| Input/PlayerControls.inputactions | 移动、跳跃、冲刺、F、左键选中、右键交换以及鼠标屏幕坐标 Point 的绑定 |
+| Player/PlayerInputReader.cs | 从所属 PlayerInput 的动作实例读取轴和 W 持有状态，缓存跳跃和冲刺按下边沿供物理步消费，F、左键和右键通过独立 performed 事件分发 |
 | Player/PlayerController2D.cs | 配置刚体，依次调度接地、冲刺次数重置、跳跃、水平移动和瞬时冲刺 |
 | Player/PlayerHorizontalMotor.cs | 以 MoveTowards 插值 velocity.x，记录最后面朝方向 |
 | Player/PlayerGroundProbe.cs | 沿 gravityDir 从当前支撑侧投射盒子，过滤自身、Trigger、墙面和离地上升状态 |
@@ -58,12 +58,17 @@
 | Interaction/InteractableBase.cs | F 交互入口 TryInteract，检查启用状态、锁、距离和物件自己的冷却；选中物件时绘制范围圆 |
 | Interaction/EventInteractable.cs | 仅 F 的通用物件，在 Inspector 的 On Interact 挂接开关、门或机关事件 |
 | Interaction/GravityBox.cs | 示例箱的 F 业务：切换颜色标记并触发 On Interact；同物体上的 GravityBody2D 提供交换能力 |
+| Interaction/GravitySelectionMarker.cs | 在已选物件上方显示独立的箭头，跟随移动并在取消选择时隐藏 |
 | Interaction/GravityBoxPush.cs | 每个物理步检查玩家接触面与 A/D 方向，控制箱子的水平解锁和停止 |
-| Interaction/PlayerInteractionPicker.cs | F 选择范围内最近的可交互物件；右键使用鼠标射线命中的目标交换重力 |
+| Interaction/PlayerInteractionPicker.cs | F 选择范围内最近的可交互物件；左键选中一个交换目标，右键对已选目标发起交换 |
 
 ## 接入与试玩
 
-打开 TestScene 并点击 Game 窗口。箱子初始向上，玩家初始向下。在远处瞄准青色箱子按 F，箱子保持原色。靠近后，让玩家碰撞体进入箱子的交互圆，把鼠标移到空白处再按 F，箱子就会切换颜色。只有右键交换重力需要鼠标瞄准箱子，玩家在 F 交互圆外也可以交换。
+打开 TestScene 并点击 Game 窗口。箱子初始向上，玩家初始向下。在远处瞄准青色箱子按 F，箱子保持原色。靠近后，让玩家碰撞体进入箱子的交互圆，把鼠标移到空白处再按 F，箱子就会切换颜色。左键点箱子后，它上方会出现黄色箭头。把鼠标移到空白处或另一只箱子上再点右键，玩家仍与箭头所指的箱子交换重力。
+
+左键点击另一个可交换目标会切换选择；重复点击同一目标会保留选择。左键点击空白、玩家自身或仅支持 F 的物体会清除选择。右键成功交换后保留选择，即使目标完全离开镜头也可再次交换。目标禁用、销毁或随场景卸载后清除选择。
+
+右键默认冷却为 **0.7 秒（游戏时间）**，由玩家和目标各自计时。冷却中的点击直接忽略，长按到期也不会触发，需再次点按。冷却期间可以更换选中目标，玩家自身剩余的冷却仍然生效。F 保留独立的近距离判断与 0.1 秒间隔。
 
 多个交互圆重叠时，每次按 F 只触发一个物件：从当前可用的物件中，选择圆心离玩家主碰撞体最近的一个。距离相同时选先启用的物件。锁定、禁用、冷却中和超出各自半径的物件均会跳过。
 
@@ -81,7 +86,7 @@ TestScene 已给箱子的 BoxCollider2D 指定 BoxContact 物理材质（摩擦�
 
 已有玩家预制体需确认根节点存在 PlayerInteractionPicker；TestScene 的 Player 已接好。新添 PlayerController2D 时 Unity 会补齐拾取组件。玩家自身的 Collider2D 放在拾取层之外。若目标使用子节点碰撞体，请给**碰撞体所在节点**设置拾取层，能力组件放在该节点或父节点。
 
-射线从相机穿过鼠标位置，只取过滤层中的首个 Collider2D。可点范围为当前相机画面；重叠目标请错开碰撞体或 Z 深度。可按关卡需求把单纯用于遮挡的层加入 Pick Layers。Trigger 拾取遵循项目 Physics 2D 的 Queries Hit Triggers 设置。
+左键选择时，射线从相机穿过鼠标位置，只取过滤层中的首个 Collider2D。可点范围为当前相机画面；重叠目标请错开碰撞体或 Z 深度。可按关卡需求把单纯用于遮挡的层加入 Pick Layers。Trigger 拾取遵循项目 Physics 2D 的 Queries Hit Triggers 设置。菜单使用 EventSystem 和对应的 UI Raycaster，并为需要拦截点击的 UI 元素开启射线命中。点击这些元素会保留选择，也不会交换。
 
 IGravityExchange 的 ReceiveGravity 用于提交一次交换的结果。发起方先检查双方冷却并保存两个方向，再让双方各自接收方向、启动本地冷却；自定义实现应遵循相同约定。仅交换方向，双方保留各自的重力强度、倍率和速度。同向交换也消耗各自冷却。
 
@@ -100,13 +105,15 @@ IGravityExchange 的 ReceiveGravity 用于提交一次交换的结果。发起�
 | 地面按住 D 后松开，再在空中重复 | 地面快速停稳，空中减速较缓；反向按 A 始终可修正 |
 | 短按、长按 W，各自保持至落地 | 短按跳得较低，长按只起跳一次 |
 | 空中 Shift，等冷却结束再按 Shift | 第一次水平爆发并自然下坠；第二次需等落地重置 |
-| 冲刺时右键异向箱并按住 | 双方只交换一次，保留各自竖直惯性 |
-| 右键同向箱或在任一方冷却时再点 | 同向时方向不变；冷却期间拒绝下一次交换 |
+| 左键选中异向箱，冲刺时点按右键并按住 | 双方只交换一次，保留各自竖直惯性 |
+| 选中同向箱后按右键，或在任一方冷却时再点 | 同向时方向不变；冷却期间拒绝下一次交换 |
 | 在圆外按住 F，再走入圆内，松开并重新按 F | 入圈时保持原色；重新按下立即变色一次 |
 | 对同一箱子在 0.1 秒内再次点按 F；间隔满后重新点按 | 快速连点只执行第一次，间隔满后可再次变色；其他物件独立计时 |
 | 在圆内启用 Interactable Locked，或退到圆外，再分别试 F 和右键 | F 无效，右键仍遵循交换双方的冷却 |
 | 在交互圆内，鼠标指向空白或仅交换物件时按 F | 最近的可用 F 物件触发一次 |
-| 鼠标指向仅 F 物体或空白时按右键 | 不执行交换，也不执行 F 业务 |
+| 选中 A，将鼠标移到 B 或空白处，右键 | 只与 A 交换；A 离开镜头后依然有效 |
+| 交换后在 0.7 秒内再次点按或一直按住 | 不排队；冷却结束后重新点按，才可再次交换 |
+| 左键点空白后再按右键；选中 A 后点击 UI | 前者清除选择并无交换；后者保留选择，点击 UI 时不会交换 |
 | 在天花板行走后按 W、Shift | 从天花板向下起跳，重新获得一次空中冲刺 |
 | 从箱子左侧按 D、从右侧按 A，随后松键或反向 | 箱子朝按键方向移动，停止推动后停在当前 X |
 | 在箱面上走下边缘；倒挂时从下表面重复 | 玩家走下箱子，箱子 X 坐标保持不变 |
