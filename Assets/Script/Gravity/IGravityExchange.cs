@@ -8,7 +8,6 @@ namespace GameClub.Player
         bool isExchangeCooldown { get; }
         void ExchangeGravity(IGravityExchange target);
 
-        // Commit the received direction and start this participant's own cooldown.
         void ReceiveGravity(Vector2 direction);
     }
 }

@@ -9,13 +9,17 @@ namespace GameClub.Player
         [Min(0f)] public float dashCooldown = 0.32f;
         [Min(0)] public int airDashCountMax = 1;
         [Range(0f, 1f)] public float dashMomentumRetention = 0.85f;
+
         public bool dashCanOverwriteSpeed = true;
         private int airDashesUsed;
         private float nextDash;
         private bool retainNextStep;
         private Rigidbody2D body;
 
-        private void Awake() => body = GetComponent<Rigidbody2D>();
+        private void Awake()
+        {
+            body = GetComponent<Rigidbody2D>();
+        }
 
         public void ResetForRespawn()
         {
@@ -37,7 +41,11 @@ namespace GameClub.Player
 
         public void TryBurst(int direction, bool grounded)
         {
-            if (Time.fixedTime < nextDash || (!grounded && airDashesUsed >= airDashCountMax)) return;
+            if (Time.fixedTime < nextDash || (!grounded && airDashesUsed >= airDashCountMax))
+            {
+                return;
+            }
+
             Vector2 velocity = body.velocity;
             float burst = direction * dashSpeed;
             velocity.x = dashCanOverwriteSpeed ? burst : velocity.x + burst;

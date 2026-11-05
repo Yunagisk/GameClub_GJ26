@@ -12,9 +12,10 @@ namespace GameClub.Player
         private void Reset() => persistentId = Guid.NewGuid().ToString("N");
 
 #if UNITY_EDITOR
-        private void OnValidate()
+        private void OnValidate()  //OnValidate实现自动补全
         {
-            if (string.IsNullOrEmpty(persistentId)) persistentId = Guid.NewGuid().ToString("N");
+            if (string.IsNullOrEmpty(persistentId)) 
+                persistentId = Guid.NewGuid().ToString("N"); //Guid保证存档数据唯一性
         }
 
         [ContextMenu("Generate new save ID for duplicate")]
@@ -25,9 +26,13 @@ namespace GameClub.Player
         {
             var data = new EntitySnapshot
             {
-                id = Id, active = gameObject.activeSelf,
-                position = transform.localPosition, rotation = transform.localRotation, scale = transform.localScale
-            };
+                id = Id, 
+                active = gameObject.activeSelf,
+                position = transform.localPosition, 
+                rotation = transform.localRotation, 
+                scale = transform.localScale
+            };   //对象初始化器
+
             var body = GetComponent<Rigidbody2D>();
             if (body)
             {
@@ -52,7 +57,9 @@ namespace GameClub.Player
             transform.localPosition = data.position;
             transform.localRotation = data.rotation;
             transform.localScale = data.scale;
+
             var body = GetComponent<Rigidbody2D>();
+
             if (body)
             {
                 body.position = transform.position;

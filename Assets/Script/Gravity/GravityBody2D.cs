@@ -5,16 +5,17 @@ namespace GameClub.Player
     [DisallowMultipleComponent, RequireComponent(typeof(Rigidbody2D))]
     public sealed class GravityBody2D : MonoBehaviour, IGravityExchange, ICheckpointState
     {
-        [Min(0.01f)] public float gravityScale = 3.5f;
-        [Min(0f)] public float gravityExchangeCD = 0.3f;
+        [SerializeField,Min(0.01f)] private float gravityScale = 3.5f;
+        [SerializeField, Min(0f)] private float gravityExchangeCD = 0.3f;
         public bool startsUpward;
 
         public Vector2 gravityDir { get; private set; }
         public bool isGravityFlipped => gravityDir.y > 0f;
+
+        private float cooldownUntil;
         public bool isExchangeCooldown => Time.time < cooldownUntil;
         private Rigidbody2D body;
         private float multiplier = 1f;
-        private float cooldownUntil;
 
         private void Awake()
         {
@@ -25,6 +26,7 @@ namespace GameClub.Player
         {
             if (body) return;
             body = GetComponent<Rigidbody2D>();
+
             gravityDir = startsUpward ? Vector2.up : Vector2.down;
             SetMultiplier(1f);
         }

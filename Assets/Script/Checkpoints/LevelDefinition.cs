@@ -16,5 +16,6 @@ namespace GameClub.Player
             Gizmos.color = Color.cyan;
             Gizmos.DrawWireCube(DefaultSpawn, new Vector3(1f, 2f, 0f));
         }
+
     }
 }

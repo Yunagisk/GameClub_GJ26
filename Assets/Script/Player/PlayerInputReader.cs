@@ -21,8 +21,8 @@ namespace GameClub.Player
         public event Action InteractPressed;
         public event Action SelectPressed;
         public event Action ExchangePressed;
-        public Vector2 PointerPosition => pointer == null ? Vector2.zero : pointer.ReadValue<Vector2>();
 
+        public Vector2 PointerPosition => pointer == null ? Vector2.zero : pointer.ReadValue<Vector2>();
         public int Horizontal => !gameplayEnabled || move == null ? 0 : System.Math.Sign(move.ReadValue<float>());
         public bool JumpHeld => gameplayEnabled && jump != null && jump.IsPressed();
 
@@ -35,6 +35,7 @@ namespace GameClub.Player
                 enabled = false;
                 return;
             }
+
             move = actions.FindAction("Gameplay/Move", true);
             jump = actions.FindAction("Gameplay/Jump", true);
             dash = actions.FindAction("Gameplay/Dash", true);
@@ -42,6 +43,7 @@ namespace GameClub.Player
             interact = actions.FindAction("Gameplay/Interact", true);
             select = actions.FindAction("Gameplay/SelectGravityTarget", true);
             exchange = actions.FindAction("Gameplay/ExchangeGravity", true);
+
             jump.performed += OnJump;
             dash.performed += OnDash;
             interact.performed += OnInteract;
@@ -65,16 +67,18 @@ namespace GameClub.Player
             wantsJump = jumpPressed;
             wantsDash = dashPressed;
             axis = dashAxis;
+
             jumpPressed = dashPressed = false;
         }
 
         private void OnDisable()
         {
-            if (jump != null) jump.performed -= OnJump;
-            if (dash != null) dash.performed -= OnDash;
-            if (interact != null) interact.performed -= OnInteract;
-            if (select != null) select.performed -= OnSelect;
-            if (exchange != null) exchange.performed -= OnExchange;
+            jump.performed -= OnJump;
+            dash.performed -= OnDash;
+            interact.performed -= OnInteract;
+            select.performed -= OnSelect;
+            exchange.performed -= OnExchange;
+
             jumpPressed = dashPressed = false;
         }
     }

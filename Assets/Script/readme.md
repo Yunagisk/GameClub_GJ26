@@ -41,26 +41,83 @@
 | groundCheckDistance | 0.06 | 足底外沿的探测余量 |
 | groundCheckSize | (0.65, 0.06) | 沿重力方向投射的盒子尺寸 |
 
-## 文件职责
+## 文件职责（完整分类索引）
+
+以下集中列出本目录全部 28 个 C# 文件与输入动作资产。路径相对 `Assets/Script`。普通组件挂载到对应 GameObject；接口和数据类不挂载。实现存档接口的组件，只有在同节点存在 SaveableEntity 时才会被收集。
+
+### Input：输入配置
+
+| 文件 | 职责 |
+|---|---|
+| Input/PlayerControls.inputactions | Gameplay 动作图，定义 A/D、W、Shift、F、左键选择、右键交换与 Point 鼠标位置的绑定；由 PlayerInput 引用 |
+
+### Player：玩家控制与表现
 
 | 路径（相对本目录） | 职责 |
 |---|---|
-| Input/PlayerControls.inputactions | 移动、跳跃、冲刺、F、左键选中、右键交换以及鼠标屏幕坐标 Point 的绑定 |
-| Player/PlayerInputReader.cs | 从所属 PlayerInput 的动作实例读取轴和 W 持有状态，缓存跳跃和冲刺按下边沿供物理步消费，F、左键和右键通过独立 performed 事件分发 |
+| Player/PlayerInputReader.cs | 唯一输入采集入口。从所属 PlayerInput 读取轴、W 持有状态和鼠标位置；缓存跳跃／冲刺，分发 F／选择／交换事件；生命周期关闭操作时清理缓存并阻止输入 |
 | Player/PlayerController2D.cs | 配置刚体，依次调度接地、冲刺次数重置、跳跃、水平移动和瞬时冲刺 |
 | Player/PlayerHorizontalMotor.cs | 以 MoveTowards 插值 velocity.x，记录最后面朝方向 |
 | Player/PlayerGroundProbe.cs | 沿 gravityDir 从当前支撑侧投射盒子，过滤自身、Trigger、墙面和离地上升状态 |
 | Player/PlayerJump.cs | 接地时施加反重力冲量，根据运动方向和 W 状态选择重力倍率 |
 | Player/PlayerDash.cs | 管理瞬时水平爆发、冷却、空中次数及一次性动量保留 |
-| Gravity/IGravityExchange.cs | 定义重力方向、冷却状态、发起交换以及接收对方方向的契约 |
-| Gravity/GravityBody2D.cs | 实现 IGravityExchange，持有单个刚体的方向、倍率和冷却，执行双方交换 |
 | Player/PlayerVisuals.cs | 更新精灵朝向和 Animator 的重力状态 |
-| Interaction/InteractableBase.cs | F 交互入口 TryInteract，检查启用状态、锁、距离和物件自己的冷却；选中物件时绘制范围圆 |
-| Interaction/EventInteractable.cs | 仅 F 的通用物件，在 Inspector 的 On Interact 挂接开关、门或机关事件 |
-| Interaction/GravityBox.cs | 示例箱的 F 业务：切换颜色标记并触发 On Interact；同物体上的 GravityBody2D 提供交换能力 |
+| Player/PlayerLifecycle.cs | 管理 Playing／Dying／Restoring／Reviving，控制输入、控制器、拾取和刚体模拟；请求死亡、放置复活玩家并重置重力／冲刺／朝向。文件同时定义 PlayerLifeState 和 PlayerMotionState 枚举 |
+| Player/PlayerAnimationState.cs | 从生命周期、接地和速度提供只读 Life／Motion；区分 Idle／Running／Rising／Falling，死亡红色、复活青色为占位表现；后续 Animator 可读取这些状态 |
+
+### Gravity：独立重力能力
+
+| 文件 | 职责 |
+|---|---|
+| Gravity/IGravityExchange.cs | 重力交换接口，定义方向、冷却状态、ExchangeGravity 和 ReceiveGravity；不负责计时或保存数据，不依赖 F 交互基类 |
+| Gravity/GravityBody2D.cs | 在玩家或箱子的刚体节点实现重力交换，管理方向、倍率和自身冷却；保存／恢复方向、基础强度、当前倍率与剩余冷却；另提供玩家复活时重置向下的入口 |
+
+### Interaction：通用交互、选择与箱子
+
+| 文件 | 职责 |
+|---|---|
+| Interaction/InteractableBase.cs | F 交互抽象基类。登记启用物件，查找范围内最近目标；TryInteract 检查启用、锁定、圆形范围与冷却；绘制范围圆；提供锁定和剩余冷却的基础存档实现 |
+| Interaction/EventInteractable.cs | F 交互时执行 Inspector 配置的 UnityEvent；继承基础交互存档，但不会自动保存事件接收者的业务状态 |
+| Interaction/GravityBox.cs | 示例箱的 F 业务：切换颜色标记并触发事件；保存标记与基础交互状态，恢复后刷新颜色；重力能力由同节点 GravityBody2D 独立提供 |
 | Interaction/GravitySelectionMarker.cs | 在已选物件上方显示独立的箭头，跟随移动并在取消选择时隐藏 |
 | Interaction/GravityBoxPush.cs | 每个物理步检查玩家接触面与 A/D 方向，控制箱子的水平解锁和停止 |
 | Interaction/PlayerInteractionPicker.cs | F 选择范围内最近的可交互物件；左键选中一个交换目标，右键对已选目标发起交换 |
+
+### Saving：物件快照协议与数据
+
+| 文件 | 职责 |
+|---|---|
+| Saving/ICheckpointState.cs | 状态组件接口：CaptureState 输出独立数据字符串，RestoreState 还原数据，RefreshState 在所有物件数据恢复后同步派生结果；接口不挂载 |
+| Saving/LevelSnapshot.cs | 定义 LevelSnapshot 和 EntitySnapshot 数据类，记录关卡路径、当前复活点 ID、出生位置、物件基础状态及组件 JSON；本身不执行保存，也不挂载 |
+| Saving/SaveableEntity.cs | 挂在参与存档的物件节点，提供固定唯一 ID；收集本节点 Transform、activeSelf、Rigidbody2D 和 ICheckpointState 组件；按组件完整类型名匹配恢复，提供统一刷新入口 |
+
+### Checkpoints：复活点与恢复调度
+
+| 文件 | 职责 |
+|---|---|
+| Checkpoints/LevelDefinition.cs | 每个关卡放置一个，指定默认出生 Transform 和淡出／淡入时长，并绘制出生位置；不保存当前进度 |
+| Checkpoints/CheckpointInteractable.cs | F 范围交互复活点，只能成功激活一次；向 LevelSession 提交快照请求，保存已激活状态，区分当前／已使用／未使用的颜色；自动依赖 SaveableEntity，无需碰撞体 |
+| Checkpoints/LevelSession.cs | 启动时自动创建并跨场景保留的总调度器。持有唯一最新内存快照，校验存档 ID／出生位置，处理保存、死亡重载、单向换关、分阶段恢复、相机对齐与过渡时序 |
+
+### Mechanisms：测试机关
+
+| 文件 | 职责 |
+|---|---|
+| Mechanisms/SwitchInteractable.cs | F 切换 isOn；保存 isOn、锁定和剩余冷却；RestoreState 只恢复这些值，RefreshState 再驱动所绑定的门并更新开关颜色；自动依赖 SaveableEntity |
+| Mechanisms/DoorController.cs | SetOpen(bool) 明确设置门状态、BoxCollider2D 开关和颜色；当前不实现存档接口，门的开闭由 SwitchInteractable 的保存状态推导 |
+
+### Hazards：死亡检测
+
+| 文件 | 职责 |
+|---|---|
+| Hazards/DeathZone.cs | 挂在尖端／坠落区的 Trigger 上，通过进入和持续接触查找玩家刚体上的 PlayerLifecycle 并请求死亡；不执行地图恢复。地刺实体底座使用独立的非 Trigger 碰撞体 |
+
+### Levels：关卡入口与过渡显示
+
+| 文件 | 职责 |
+|---|---|
+| Levels/LevelExit.cs | 玩家进入出口 Trigger 时请求 LevelSession 加载 destinationScene；不携带旧关卡快照，也不自动生成返回出口 |
+| Levels/TransitionOverlay.cs | 根据 Alpha 绘制全屏黑色遮罩，仅负责过渡显示；由 LevelSession 自动补齐并控制，不执行死亡或读档逻辑 |
 
 ## 接入与试玩
 
@@ -76,7 +133,7 @@
 
 | 物件能力 | 挂载与设置 |
 |---|---|
-| 仅 F | 在带 Collider2D 的物体上挂 EventInteractable，设为 Interactable 层，配置 On Interact。自定义物件继承 InteractableBase，将成功交互的业务写在 protected OnInteract()；额外条件可重写 CanInteract() 并保留 base.CanInteract()。外部通过 TryInteract(actorCollider) 发起交互。 |
+| 仅 F | 在物体上挂 EventInteractable 并配置 On Interact；目标自身无需 Collider2D，F 范围判定使用玩家碰撞体，也不按目标 Layer 过滤。自定义物件继承 InteractableBase，将交互业务写在 protected OnInteract()；额外条件可重写 CanInteract() 并保留 base.CanInteract()。外部通过 TryInteract(actorCollider) 发起交互。若还要被鼠标射线识别，再配置目标碰撞体和拾取层。 |
 | 仅交换 | 在有 Collider2D 的物体上挂 GravityBody2D，刚体设 Dynamic，设为 GravityBox 层，选择 Starts Upward；也可自行实现 IGravityExchange。 |
 | 两者都有 | 在箱子上挂 GravityBox，自动补齐 BoxCollider2D 与 GravityBody2D。编辑器首次挂载默认选择 GravityBox 层，初始向上。F 事件可在 Inspector 中追加。 |
 
@@ -123,21 +180,7 @@ IGravityExchange 的 ReceiveGravity 用于提交一次交换的结果。发起�
 
 新测试关卡位于 Assets/Scenes/CheckpointTestA.unity 和 CheckpointTestB.unity，已加入 Build Settings。打开 CheckpointTestA 后运行。原 TestScene 可继续用于已有移动与重力交换测试。
 
-| 分类 | 脚本 | 职责 |
-|---|---|---|
-| Saving | ICheckpointState.cs | 组件提供 CaptureState、RestoreState 和 RefreshState，明确保存自己的运行数据 |
-| Saving | LevelSnapshot.cs | 一份关卡快照及物件记录的数据结构 |
-| Saving | SaveableEntity.cs | 标记参与存档的物件，持有固定 ID，收集同节点的状态组件、Transform 和 Rigidbody2D |
-| Checkpoints | LevelDefinition.cs | 关卡默认出生位置与淡出／淡入时长 |
-| Checkpoints | LevelSession.cs | 跨场景保留最新记录，调度保存、死亡重载、单向换关及分阶段恢复 |
-| Checkpoints | CheckpointInteractable.cs | 继承 F 范围交互，激活一次并提交新快照，更新使用状态和颜色 |
-| Mechanisms | SwitchInteractable.cs | F 切换开关并保存状态，恢复后统一驱动门 |
-| Mechanisms | DoorController.cs | 根据明确的开／关值设置外观和实体碰撞 |
-| Hazards | DeathZone.cs | Trigger 接触玩家后请求死亡，持续重叠也会检测 |
-| Levels | LevelExit.cs | 请求进入指定关卡，加载原因与死亡重载分开 |
-| Levels | TransitionOverlay.cs | 显示过渡黑色遮罩 |
-| Player | PlayerLifecycle.cs | 管理 Playing、Dying、Restoring、Reviving，控制输入、物理和复活重置 |
-| Player | PlayerAnimationState.cs | 提供独立的 Idle、Running、Rising、Falling 状态；死亡红色、复活青色为占位表现 |
+相关脚本已全部合并到前面的「文件职责（完整分类索引）」。以下说明配置与实际恢复过程。
 
 ### 推荐默认值与场景配置
 
@@ -171,6 +214,54 @@ SaveableEntity 决定存档范围，Layer 继续用于原有碰撞和鼠标选�
 保存的组件数据转成独立 JSON 字符串，后续游玩不会改变旧快照。保存时发现新生成的 SaveableEntity 会拒绝提交并保留旧快照；运行时生成物件需要后续增加生成类型、实例 ID 与生成适配器。预放置物件在快照后销毁，会通过重载原场景重新建立；快照前已经销毁的预放置物件，在恢复时禁用。禁用物件也参与收集，快照组件应允许在 Awake 尚未执行时安全读取和恢复状态。
 
 地图恢复依次处理物件数据、启用状态和 RefreshState，最后同步物理、放置玩家和对齐 Cinemachine。新机关若在 Update 中自行推进，恢复阶段应检查 LevelSession.Instance.IsRestoring 并暂停推进。不要在 Start 中无条件覆盖 RestoreState 已写入的值。粒子、声音和奖励只在正常交互时播放，RefreshState 直接同步结果。
+
+### 数据恢复的实际调用流程
+
+当前采用「重载原始场景，再应用最新数据快照」。LevelSession 的 snapshot 字段持有这一份内存数据，并通过 DontDestroyOnLoad 跨场景重载保留。没有在运行时把地图生成预制体，也没有写入硬盘存档文件。JSON 字符串只是各组件的数据载体。
+
+保存入口：
+
+1. PlayerInteractionPicker 收到 F 事件，找到范围内可用的复活点，调用继承的 TryInteract。
+2. CheckpointInteractable.OnInteract 先把 activated 设为 true，使本次快照包含「该点已使用」，再传入自己的 ID 和 respawnPoint.position 调用 LevelSession.SaveCheckpoint。提交失败时恢复未激活状态。
+3. LevelSession 校验出生空间，调用 Capture 收集所有仍存在的已登记 SaveableEntity，包括禁用物件；完整构建新快照后替换旧 snapshot。
+4. 每个 SaveableEntity.Capture 记录自身局部位置／旋转／缩放、activeSelf、刚体速度等，再调用同节点每个 ICheckpointState.CaptureState，把返回字符串与组件类型名对应保存。后续修改运行对象不会改写这些字符串。
+
+死亡恢复入口：
+
+1. DeathZone → PlayerLifecycle.RequestDeath → LevelSession.RequestDeath。接受死亡后玩家进入 Dying，关闭输入和刚体模拟。
+2. LevelSession.Reload 等待死亡占位时间、淡出，再由 Load 使用 LoadSceneAsync(..., Single) 重载 snapshot.scenePath。重载重建场景中的原始对象及 Inspector 引用。
+3. 暂停物理模拟，等待场景 Start 完成；TryInitialize 重新收集全部 SaveableEntity，以固定 ID 匹配快照记录，不使用重载前的对象引用或临时 InstanceID。
+4. 对所有记录执行 SaveableEntity.Restore：恢复 Transform、刚体数据，并调用各组件 RestoreState。随后统一恢复 activeSelf；原场景有但快照没有的存档对象会被禁用，表示它在保存前已经销毁。
+5. 全部物件数据恢复后，RefreshEntities 统一调用各组件 RefreshState，同步机关联动、门碰撞和视觉表现。业务组件不应在此重放 F 操作、奖励或声音。部分组件会在 RestoreState 内直接应用自身物理参数，例如 GravityBody2D 的 gravityScale。
+6. 同步物理 Transform、检查出生空间，PlayerLifecycle.PlaceForRevival 放置玩家并重置玩家默认状态；相机对齐后恢复地图物理、淡入和复活占位表现，最后开放操作。
+
+若进入新关卡，LevelSession.Travel 调用 Load(destination, null)，不会应用旧快照。新关卡初始化成功后，从其默认地图和 DefaultSpawn 创建新的默认快照，覆盖上一关记录。
+
+### 开关和门如何保持恢复一致
+
+当前测试机关是一只开关控制一扇门。**开关的 isOn 是开闭状态的唯一来源，门根据它设置结果。**
+
+| 阶段 | SwitchInteractable | DoorController |
+|---|---|---|
+| 正常按 F | OnInteract 翻转 isOn，再调用 RefreshState | 接收 SetOpen(isOn) |
+| 激活复活点 | CaptureState 把 isOn 保存为 JSON 中的 on，并保存继承的锁定与冷却 | 不单独保存开闭值 |
+| 重载并恢复数据 | RestoreState 将保存的 on 写回 isOn，此时不调用 F 业务 | 等待统一刷新阶段应用最终结果 |
+| 统一刷新 | RefreshState 调用 door.SetOpen(isOn)，更新开关红／绿色 | 同步 IsOpen、BoxCollider2D.enabled = !open 和门的颜色 |
+
+例如存档时开关为关闭，之后玩家开门再死亡：重载后把开关还原成关闭，统一刷新调用 SetOpen(false)，门碰撞体重新启用、外观恢复关闭色。存档时为开启，则调用 SetOpen(true)，门恢复可通过状态。这里用明确的布尔值设置，重复刷新也不会反向切换。
+
+配置时在开关节点保留 SaveableEntity，并将目标门拖入 SwitchInteractable 的 Door 引用。门的开闭派生自开关，因此当前门无需额外存一份开闭状态。如果门的位置也会改变，需要为门挂 SaveableEntity 保存 Transform；如果门有独立的钥匙解锁、永久打开或剧情状态，则还需实现自己的 ICheckpointState 并明确它与开关的优先关系。
+
+当前一对一实现不能直接作为多开关控制同一扇门的方案：多个开关的 RefreshState 会相互覆盖，结果取决于最后一次设置。扩展时应增加负责门条件的统一组件，在相关开关数据全部恢复后汇总 AND／OR 等规则，再调用一次 SetOpen。该协调组件尚未实现。
+
+### 新机关接入存档时需要明确的边界
+
+- 只挂 SaveableEntity 不会自动保存任意脚本字段，也不会记录 UnityEvent 的所有副作用。它只保存已列出的基础数据，以及同节点 ICheckpointState 明确提供的数据。
+- 自定义 F 机关继承 InteractableBase 时已有基础接口实现，但仍需覆盖 CaptureState／RestoreState 保存自身业务值，并用 CaptureInteraction／RestoreInteraction 保留基类锁定与冷却；RefreshState 直接应用结果，不调用 OnInteract。
+- EventInteractable 若通过事件打开一扇门，仅能自动保存交互基类状态。应改用当前 SwitchInteractable，或为事件影响到的对象实现独立状态保存，否则仍可能出现开关与门不一致。
+- 同节点不能挂两个相同完整类型名的状态组件；子节点状态不会被父节点 SaveableEntity 自动收集。当前基础记录也不保存运行时换父节点、任意组件 enabled、材质或全部刚体设置，需要时由业务状态组件补充。
+- 快照恢复会还原物件的线速度和角速度；玩家复活则明确清零速度并恢复向下重力。这与日常重力交换不同：交换过程仍不修改双方速度。
+- 保存前已经销毁的预放置对象，恢复时会被禁用；保存后才销毁的对象，由原始场景重载重新创建并应用记录。运行时新生成的存档对象暂不支持。
 
 ### 玩家与关卡生命周期
 
