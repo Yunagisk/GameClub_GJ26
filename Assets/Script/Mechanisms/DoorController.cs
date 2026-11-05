@@ -14,7 +14,9 @@ namespace GameClub.Player
         {
             IsOpen = open;
             GetComponent<BoxCollider2D>().enabled = !open;
+
             if (!visual) visual = GetComponent<SpriteRenderer>();
+
             if (visual) visual.color = open ? openColor : closedColor;
         }
     }

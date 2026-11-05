@@ -29,7 +29,7 @@ namespace GameClub.Player
                 id = Id, 
                 active = gameObject.activeSelf,
                 position = transform.localPosition, 
-                rotation = transform.localRotation, 
+                rotation = transform.localRotation,                                  
                 scale = transform.localScale
             };   //对象初始化器
 

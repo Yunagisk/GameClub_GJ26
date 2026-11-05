@@ -11,6 +11,7 @@ namespace GameClub.Player
     public sealed class LevelSession : MonoBehaviour
     {
         public static LevelSession Instance { get; private set; }
+
         [Min(0f)] public float fadeOutDuration = 0.15f;
         [Min(0f)] public float fadeInDuration = 0.15f;
         public string CurrentCheckpointId => snapshot == null ? null : snapshot.checkpointId;
