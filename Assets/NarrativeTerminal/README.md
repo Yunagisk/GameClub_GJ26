@@ -4,7 +4,7 @@
 
 ## 交付内容
 
-- `Scripts/`：日志数据、终端交互、UI 显示。
+- `Assets/Scripts/Narrative/`：日志数据、终端交互、UI 显示（按团队规范统一放在 `Scripts` 下）。
 - `Prefabs/NarrativeTerminalCanvas.prefab`：日志 UI，一个场景放一个。
 - `Prefabs/NarrativeLogTerminal.prefab`：场景里的终端物体，可以放多个。
 - `Content/ExampleLog.asset`：日志内容，策划/剧情可以直接在 Inspector 改。
