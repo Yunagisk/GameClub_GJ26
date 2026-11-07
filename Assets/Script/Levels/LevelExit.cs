@@ -5,7 +5,7 @@ namespace GameClub.Player
     [RequireComponent(typeof(BoxCollider2D))]
     public sealed class LevelExit : MonoBehaviour
     {
-        [SerializeField] private string destinationScene = "CheckpointTestB";
+        [SerializeField] private string destinationScene = "SceneB";
 
         private void Reset() => GetComponent<BoxCollider2D>().isTrigger = true;
 

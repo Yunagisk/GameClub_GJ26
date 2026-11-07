@@ -18,6 +18,7 @@ namespace GameClub.Audio
         private string deathReloadPath;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+
         private static void Bootstrap()
         {
             if (!Instance) new GameObject("Music Manager").AddComponent<MusicManager>();

@@ -1,22 +1,48 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace GameClub.Player
 {
     public sealed class TransitionOverlay : MonoBehaviour
     {
-        public float Alpha { get; set; }
+        private CanvasGroup group;
 
-        private void OnGUI()
+        public float Alpha
         {
-            if (Alpha <= 0f) return;
-            Color previous = GUI.color;
-            int depth = GUI.depth;
-            GUI.depth = -1000;
-            GUI.color = new Color(0f, 0f, 0f, Alpha);
-            GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), Texture2D.whiteTexture);
-            GUI.color = previous;
-            GUI.depth = depth;
+            get { Initialize(); return group.alpha; }
+            set { Initialize(); group.alpha = Mathf.Clamp01(value); }
         }
 
+        public bool BlocksInput
+        {
+            get { Initialize(); return group.blocksRaycasts; }
+            set { Initialize(); group.blocksRaycasts = value; }
+        }
+
+        private void Awake() => Initialize();
+
+        private void Initialize()
+        {
+            if (group) return;
+            var root = new GameObject("Transition Canvas", typeof(RectTransform), typeof(Canvas),
+                typeof(CanvasGroup), typeof(GraphicRaycaster));
+            root.layer = 5;
+            root.transform.SetParent(transform, false);
+            var canvas = root.GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 32767;
+            group = root.GetComponent<CanvasGroup>();
+            group.alpha = 0f;
+            group.blocksRaycasts = false;
+
+            var panel = new GameObject("Black Screen", typeof(RectTransform), typeof(Image));
+            panel.layer = 5;
+            panel.transform.SetParent(root.transform, false);
+            var rect = panel.GetComponent<RectTransform>();
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = rect.offsetMax = Vector2.zero;
+            panel.GetComponent<Image>().color = Color.black;
+        }
     }
 }

@@ -43,7 +43,7 @@
 
 ## 文件职责（完整分类索引）
 
-以下集中列出本目录全部 31 个 C# 文件与输入动作资产。路径相对 `Assets/Script`。普通组件挂载到对应 GameObject；接口和数据类不挂载。实现存档接口的组件，只有在同节点存在 SaveableEntity 时才会被收集。
+以下集中列出本目录全部 32 个 C# 文件与输入动作资产。路径相对 `Assets/Script`。普通组件挂载到对应 GameObject；接口和数据类不挂载。实现存档接口的组件，只有在同节点存在 SaveableEntity 时才会被收集。
 
 ### Audio：背景音乐
 
@@ -51,6 +51,12 @@
 |---|---|
 | Audio/MusicManager.cs | 自动创建并跨场景保留的单例，持有唯一音乐 AudioSource；读取场景配置，负责播放、停止、淡入淡出及死亡重载续播；不添加 AudioListener，不参与地图快照 |
 | Audio/SceneMusic.cs | 每场景一个启用的音乐配置组件，提供曲目、音量、循环、淡入淡出时间与死亡续播开关；不创建音源、不保存播放进度 |
+
+### SceneSwitch：开始界面入口
+
+| 文件 | 职责 |
+|---|---|
+| SceneSwitch/StartGameController.cs | 挂在开始按钮上，自动订阅点击；提交 SceneA 加载请求，成功后锁定按钮并停止提示闪烁；只配置本次开始过渡，不自行加载场景或控制音乐 |
 
 ### Text：文字表现
 
@@ -76,7 +82,7 @@
 | Player/PlayerDash.cs | 管理瞬时水平爆发、冷却、空中次数及一次性动量保留 |
 | Player/PlayerVisuals.cs | 更新精灵朝向和 Animator 的重力状态 |
 | Player/PlayerLifecycle.cs | 管理 Playing／Dying／Restoring／Reviving，控制输入、控制器、拾取和刚体模拟；请求死亡、放置复活玩家并重置重力／冲刺／朝向。文件同时定义 PlayerLifeState 和 PlayerMotionState 枚举 |
-| Player/PlayerAnimationState.cs | 从生命周期、接地和速度提供只读 Life／Motion；区分 Idle／Running／Rising／Falling，死亡红色、复活青色为占位表现；后续 Animator 可读取这些状态 |
+| Player/PlayerAnimationState.cs | 从生命周期、接地和速度提供只读 Life／Motion；区分 Idle／Running／Rising／Falling，死亡红色、死亡后的复活青色为占位表现；首次入场与正常换关显示角色原色；后续 Animator 可读取这些状态 |
 
 ### Gravity：独立重力能力
 
@@ -130,7 +136,7 @@
 | 文件 | 职责 |
 |---|---|
 | Levels/LevelExit.cs | 玩家进入出口 Trigger 时请求 LevelSession 加载 destinationScene；不携带旧关卡快照，也不自动生成返回出口 |
-| Levels/TransitionOverlay.cs | 根据 Alpha 绘制全屏黑色遮罩，仅负责过渡显示；由 LevelSession 自动补齐并控制，不执行死亡或读档逻辑 |
+| Levels/TransitionOverlay.cs | 自动建立排序为 32767 的 Screen Space Overlay Canvas 和黑色 Image，Alpha 控制透明度、BlocksInput 控制点击拦截；随 LevelSession 跨场景保留，不执行加载业务 |
 
 ## 场景背景音乐
 
@@ -153,7 +159,7 @@ LevelSession.Travel 同时启动画面淡出与音乐淡出，两者完成后才
 
 音乐音源固定为 2D，不随角色距离改变；使用不受 Time.timeScale 影响的淡入淡出。当前暂停游戏时间不会自动暂停背景音乐。音乐与地图快照独立，不回滚到激活复活点时的播放位置。配置在场景加载时读取，运行中修改配置或禁用配置组件不会自动切歌；StopMusic 可显式停止当前播放。此版本仅由 Single 场景加载驱动音乐，Additive 加载不会抢占曲目。
 
-StartGame 音频使用 Streaming 与 Load In Background，保留立体声，以减少长音乐整段解压和同步加载的开销；音量需按实际设备试听调整。全局音量设置、AudioMixer 分组、音效和双音源交叉淡化尚未加入；将来可独立扩展，不需要更改机关存档协议。本次音乐接入不包含开始按钮跳转或返回菜单按钮，需由各自的界面入口发起场景切换。
+StartGame 音频使用 Streaming 与 Load In Background，保留立体声，以减少长音乐整段解压和同步加载的开销；音量需按实际设备试听调整。全局音量设置、AudioMixer 分组、音效和双音源交叉淡化尚未加入；将来可独立扩展，不需要更改机关存档协议。StartGame 已通过 StartGameController 接入 SceneA；尚未添加返回菜单按钮。
 
 ## 接入与试玩
 
@@ -214,7 +220,7 @@ IGravityExchange 的 ReceiveGravity 用于提交一次交换的结果。发起�
 
 ## 复活与地图快照
 
-新测试关卡位于 Assets/Scenes/CheckpointTestA.unity 和 CheckpointTestB.unity，已加入 Build Settings。打开 CheckpointTestA 后运行。原 TestScene 可继续用于已有移动与重力交换测试。
+新测试关卡位于 Assets/Scenes/SceneA.unity 和 SceneB.unity，已加入 Build Settings。打开 SceneA 后运行。原 TestScene 可继续用于已有移动与重力交换测试。
 
 相关脚本已全部合并到前面的「文件职责（完整分类索引）」。以下说明配置与实际恢复过程。
 
@@ -223,14 +229,14 @@ IGravityExchange 的 ReceiveGravity 用于提交一次交换的结果。发起�
 | 字段 | 默认值 | 所在组件 |
 |---|---:|---|
 | deathDuration | 0.3 秒 | PlayerLifecycle，死亡红色占位时间 |
-| reviveDuration | 0.6 秒 | PlayerLifecycle，复活青色占位时间 |
+| reviveDuration | 0.6 秒 | PlayerLifecycle，入场／复活占位时间，死亡复活显示青色 |
 | fadeOutDuration / fadeInDuration | 0.15 / 0.15 秒 | LevelDefinition，关卡过渡时长 |
 | interactionRadius | 2 世界单位 | CheckpointInteractable、SwitchInteractable，继承基类字段 |
 | interactionCooldown | 0.1 秒 | 同一物件成功 F 交互的最短间隔 |
 | interactableLocked | false | 通用交互锁定 |
 | defaultSpawn | 必填 | LevelDefinition，玩家根节点的世界出生位置 |
 | respawnPoint | 必填 | CheckpointInteractable，玩家根节点的世界复活位置 |
-| destinationScene | CheckpointTestB | LevelExit，目标必须启用在 Build Settings 中 |
+| destinationScene | SceneB | LevelExit，目标必须启用在 Build Settings 中 |
 | persistentId | 编辑器生成唯一值 | SaveableEntity，同关卡内必须唯一 |
 
 新关卡放一个 LevelDefinition 并指定 DefaultSpawn。玩家挂 PlayerLifecycle 和 PlayerAnimationState；现有移动、输入、交互组件继续放在玩家根节点。LevelSession 在启动时自动创建，读取当前 LevelDefinition 的过渡参数。
@@ -311,9 +317,30 @@ SaveableEntity 决定存档范围，Layer 继续用于原有碰撞和鼠标选�
 
 ### 测试路线
 
-1. 打开 CheckpointTestA，玩家初始在最左侧。青色重力箱默认向下，便于先测试推动和 F 标记。
+1. 打开 SceneA，玩家初始在最左侧。青色重力箱默认向下，便于先测试推动和 F 标记。
 2. 走到红色开关附近按 F。门变成半透明绿色并可通过。
 3. 在门后第一根黄色柱体附近按 F，柱体变青。再返回开关关闭门，推动箱子或交换箱子重力，改变地图。
 4. 接触红色地刺尖端。观察玩家变红、短暂淡出、回到复活点右侧变青，然后恢复操作。门应恢复保存时的状态，箱子和重力也应恢复。
 5. 跳过地刺，激活第二个复活点。第一个点变灰且无法再次激活，之后死亡出现在第二个点旁。
 6. 进入最右侧紫色出口。B 的门为关闭状态、复活点未使用。直接触碰 B 的地刺，会回到 B 的默认出生位置。
+
+
+## StartGame → SceneA → SceneB
+
+StartGame 的 Button 已挂 StartGameController，Prompt Blink 已引用文字闪烁组件；启用时自动订阅 Button.onClick，因此 Inspector 的 On Click 列表可以为空，不要重复手动绑定。文字 Raycast Target 关闭、按钮 Image 开启。按钮使用全屏拉伸的透明 Image 接收点击，子节点 Background 显示原图并通过 AspectRatioFitter（Envelope Parent，16:9）保持比例铺满屏幕，非 16:9 会裁切边缘。背景子节点不接收射线，因此底部文字位置和屏幕边缘都能点击。SceneA 出口的旧名称引用已改为 SceneB，两个关卡均保持现有配置。
+
+| StartGameController 字段 | 默认值 | 含义 |
+|---|---|---|
+| destinationScene | Assets/Scenes/SceneA.unity | 使用完整场景路径定位目标，必须在 Build Settings 中启用 |
+| promptBlink | 提示文字上的 BlinkText | 请求成功后禁用闪烁，文字保留在当前亮度 |
+| fadeOutDuration | 0.35 秒 | 开始界面逐渐变黑 |
+| minimumBlackDuration | 0.15 秒 | 全黑最短时间，加载／初始化和等待音乐淡出所花时间计入其中 |
+| fadeInDuration | 0.45 秒 | 关卡画面逐渐显露 |
+
+点击时先请求 LevelSession.TryStartGame，目标无效或系统正在切换时返回 false，按钮和文字继续保持可用；接受请求后锁定按钮、停止闪烁并拦截其他 UI 点击。LevelSession 在下一次 Update 调度，画面与菜单音乐同时淡出，确保全黑画面有机会呈现后再异步加载。初始化默认地图快照、出生位置、相机后淡入，入场占位结束才开放控制。默认玩家占位为 0.6 秒，与 0.45 秒淡入重叠，淡入结束后剩余约 0.15 秒。
+
+开始入口的时间仅用于本次请求，不覆盖 LevelDefinition 的关卡过渡配置。原 RequestTravel(string) 仍可供出口使用；新增 TryRequestTravel 返回请求是否被接受，CanTravel 为只读可请求状态。死亡仍优先于同一步的普通换关请求。PlayerLifecycle.IsRespawning 区分死亡复活与普通入场；两者使用相同 Reviving 生命周期锁定操作，但普通入场使用角色原色，死亡复活使用青色。
+
+遮罩 Canvas 是 LevelSession 的运行时子物体，无需手动创建，不要把其他游戏 UI 排序设置到遮罩之上。透明度与点击拦截独立：过渡开始即拦截，完成入场才放行。淡出淡入使用真实时间。黑屏能遮住加载的画面跳变，但不能消除重型场景初始化的主线程耗时。
+
+验证路线：运行 StartGame，点击背景或文字位置，应只进入一次 SceneA；观察音乐切换、默认出生点、角色原色和过渡期间输入锁定；死亡时确认青色复活表现和音乐续播；走到 SceneA 出口应进入 SceneB。若目标缺失，在请求阶段拒绝并记录错误；若关卡内部配置或出生点无效，沿用现有恢复失败保护，解除黑色遮罩但保持玩家操作锁定，请修正 Console 指出的配置。

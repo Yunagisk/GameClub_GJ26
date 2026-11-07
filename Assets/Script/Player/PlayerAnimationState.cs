@@ -32,7 +32,7 @@ namespace GameClub.Player
                 : (fallSpeed < 0f ? PlayerMotionState.Rising : PlayerMotionState.Falling);
             if (visual)
                 visual.color = Life == PlayerLifeState.Dying ? Color.red
-                    : Life == PlayerLifeState.Reviving ? Color.cyan : normalColor;
+                    : Life == PlayerLifeState.Reviving && lifecycle.IsRespawning ? Color.cyan : normalColor;
         }
     }
 }

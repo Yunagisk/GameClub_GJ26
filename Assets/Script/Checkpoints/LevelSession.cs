@@ -18,12 +18,15 @@ namespace GameClub.Player
         public string CurrentCheckpointId => snapshot == null ? null : snapshot.checkpointId;
         public bool IsRestoring { get; private set; } = true;
         public bool CanSave => !busy && !pendingDeath && snapshot != null && player && player.CanControl;
+        public bool CanTravel => !busy && !pendingDeath && string.IsNullOrEmpty(pendingDestination);
 
         private LevelSnapshot snapshot;
         private Dictionary<string, SaveableEntity> entities;
         private PlayerLifecycle player;
         private PlayerLifecycle pendingDeath;
         private string pendingDestination;
+        private bool pendingStartGame;
+        private float startFadeOut, startFadeIn, startMinimumBlack;
         private bool busy;
         private bool internalLoad;
         private TransitionOverlay overlay;
@@ -63,6 +66,7 @@ namespace GameClub.Player
         private IEnumerator EnterLoadedScene(Scene scene)
         {
             busy = true;
+            overlay.BlocksInput = true;
             IsRestoring = true;
             Physics2D.simulationMode = SimulationMode2D.Script;
             yield return null; // Allow scene Start methods to finish while simulation is suspended.
@@ -82,13 +86,16 @@ namespace GameClub.Player
                 var dead = pendingDeath;
                 pendingDeath = null;
                 pendingDestination = null;
+                pendingStartGame = false;
                 StartCoroutine(Reload(dead));
             }
             else if (!string.IsNullOrEmpty(pendingDestination))
             {
                 string destination = pendingDestination;
+                bool startingGame = pendingStartGame;
                 pendingDestination = null;
-                StartCoroutine(Travel(destination));
+                pendingStartGame = false;
+                StartCoroutine(Travel(destination, startingGame));
             }
         }
 
@@ -99,15 +106,30 @@ namespace GameClub.Player
             return true;
         }
 
-        public void RequestTravel(string destination)
+        public void RequestTravel(string destination) => TryRequestTravel(destination);
+
+        public bool TryRequestTravel(string destination)
         {
-            if (busy || pendingDeath || !string.IsNullOrEmpty(pendingDestination)) return;
-            if (!Application.CanStreamedLevelBeLoaded(destination))
+            if (!CanTravel) return false;
+            if (string.IsNullOrWhiteSpace(destination) || !Application.CanStreamedLevelBeLoaded(destination))
             {
                 Debug.LogError("Destination must be enabled in Build Settings: " + destination);
-                return;
+                return false;
             }
             pendingDestination = destination; // Resolve next Update so death in this physics step wins.
+            pendingStartGame = false;
+            overlay.BlocksInput = true;
+            return true;
+        }
+
+        public bool TryStartGame(string destination, float fadeOut, float fadeIn, float minimumBlack)
+        {
+            if (!TryRequestTravel(destination)) return false;
+            pendingStartGame = true;
+            startFadeOut = Mathf.Max(0f, fadeOut);
+            startFadeIn = Mathf.Max(0f, fadeIn);
+            startMinimumBlack = Mathf.Max(0f, minimumBlack);
+            return true;
         }
 
         public bool SaveCheckpoint(string id, Vector3 spawn)
@@ -142,23 +164,27 @@ namespace GameClub.Player
         private IEnumerator Reload(PlayerLifecycle dead)
         {
             busy = true;
+            overlay.BlocksInput = true;
             yield return new WaitForSecondsRealtime(dead.deathDuration);
             yield return Fade(1f, fadeOutDuration);
+            yield return null; // Present the fully opaque overlay before loading.
             dead.SetState(PlayerLifeState.Restoring);
             yield return Load(snapshot.scenePath, snapshot);
         }
 
-        private IEnumerator Travel(string destination)
+        private IEnumerator Travel(string destination, bool startingGame)
         {
             busy = true;
             if (player) player.SetState(PlayerLifeState.Restoring);
             Coroutine musicFade = MusicManager.Instance ? MusicManager.Instance.FadeOutForTravel() : null;
-            yield return Fade(1f, fadeOutDuration);
+            yield return Fade(1f, startingGame ? startFadeOut : fadeOutDuration);
+            float blackUntil = Time.realtimeSinceStartup + (startingGame ? startMinimumBlack : 0f);
+            yield return null;
             if (musicFade != null) yield return musicFade;
-            yield return Load(destination, null);
+            yield return Load(destination, null, startingGame ? startFadeIn : -1f, blackUntil);
         }
 
-        private IEnumerator Load(string destination, LevelSnapshot restore)
+        private IEnumerator Load(string destination, LevelSnapshot restore, float revealDuration = -1f, float blackUntil = 0f)
         {
             IsRestoring = true;
             Physics2D.simulationMode = SimulationMode2D.Script;
@@ -173,7 +199,9 @@ namespace GameClub.Player
                 FinishFailure();
                 yield break;
             }
-            yield return Reveal();
+            float remainingBlack = blackUntil - Time.realtimeSinceStartup;
+            if (remainingBlack > 0f) yield return new WaitForSecondsRealtime(remainingBlack);
+            yield return Reveal(revealDuration);
         }
 
         private bool TryInitialize(Scene scene, LevelSnapshot restore)
@@ -224,7 +252,7 @@ namespace GameClub.Player
                 Physics2D.SyncTransforms();
                 ValidateSpawn(spawn);
                 Vector3 warp = spawn - player.transform.position;
-                player.PlaceForRevival(spawn);
+                player.PlaceForRevival(spawn, restore != null);
                 Physics2D.SyncTransforms();
                 if (restore == null)
                 {
@@ -267,16 +295,18 @@ namespace GameClub.Player
             }
         }
 
-        private IEnumerator Reveal()
+        private IEnumerator Reveal(float durationOverride = -1f)
         {
             IsRestoring = false;
             Physics2D.simulationMode = normalSimulation;
             yield return null; // Camera aligns before the black overlay is removed.
             float revivalTime = player ? player.reviveDuration : 0f;
-            yield return Fade(0f, fadeInDuration);
-            yield return new WaitForSecondsRealtime(Mathf.Max(0f, revivalTime - fadeInDuration));
+            float duration = durationOverride >= 0f ? durationOverride : fadeInDuration;
+            yield return Fade(0f, duration);
+            yield return new WaitForSecondsRealtime(Mathf.Max(0f, revivalTime - duration));
             if (player) player.SetState(PlayerLifeState.Playing);
             busy = false;
+            overlay.BlocksInput = false;
         }
 
         private IEnumerator Fade(float target, float duration)
@@ -296,6 +326,7 @@ namespace GameClub.Player
         {
             Physics2D.simulationMode = normalSimulation;
             overlay.Alpha = 0f;
+            overlay.BlocksInput = false;
             // Keep control blocked on invalid restoration rather than playing a partially restored level.
             busy = true;
         }

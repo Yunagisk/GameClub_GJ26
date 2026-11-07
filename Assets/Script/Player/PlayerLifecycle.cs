@@ -12,6 +12,7 @@ namespace GameClub.Player
         [Min(0f)] public float reviveDuration = 0.6f;
         public PlayerLifeState State { get; private set; } = PlayerLifeState.Restoring;
         public bool CanControl => State == PlayerLifeState.Playing;
+        public bool IsRespawning { get; private set; }
         private Rigidbody2D body;
 
         private void Awake()
@@ -41,8 +42,9 @@ namespace GameClub.Player
             body.simulated = playing;
         }
 
-        public void PlaceForRevival(Vector3 position)
+        public void PlaceForRevival(Vector3 position, bool isRespawning = true)
         {
+            IsRespawning = isRespawning;
             transform.position = position;
             body.position = position;
             GetComponent<GravityBody2D>().ResetForRespawn();
