@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Cinemachine;
+using GameClub.Audio;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -151,7 +152,9 @@ namespace GameClub.Player
         {
             busy = true;
             if (player) player.SetState(PlayerLifeState.Restoring);
+            Coroutine musicFade = MusicManager.Instance ? MusicManager.Instance.FadeOutForTravel() : null;
             yield return Fade(1f, fadeOutDuration);
+            if (musicFade != null) yield return musicFade;
             yield return Load(destination, null);
         }
 
@@ -160,6 +163,7 @@ namespace GameClub.Player
             IsRestoring = true;
             Physics2D.simulationMode = SimulationMode2D.Script;
             internalLoad = true;
+            if (MusicManager.Instance) MusicManager.Instance.PrepareSceneLoad(destination, restore != null);
             var operation = SceneManager.LoadSceneAsync(destination, LoadSceneMode.Single);
             yield return operation;
             internalLoad = false;

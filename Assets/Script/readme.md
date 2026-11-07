@@ -43,7 +43,20 @@
 
 ## 文件职责（完整分类索引）
 
-以下集中列出本目录全部 28 个 C# 文件与输入动作资产。路径相对 `Assets/Script`。普通组件挂载到对应 GameObject；接口和数据类不挂载。实现存档接口的组件，只有在同节点存在 SaveableEntity 时才会被收集。
+以下集中列出本目录全部 31 个 C# 文件与输入动作资产。路径相对 `Assets/Script`。普通组件挂载到对应 GameObject；接口和数据类不挂载。实现存档接口的组件，只有在同节点存在 SaveableEntity 时才会被收集。
+
+### Audio：背景音乐
+
+| 文件 | 职责 |
+|---|---|
+| Audio/MusicManager.cs | 自动创建并跨场景保留的单例，持有唯一音乐 AudioSource；读取场景配置，负责播放、停止、淡入淡出及死亡重载续播；不添加 AudioListener，不参与地图快照 |
+| Audio/SceneMusic.cs | 每场景一个启用的音乐配置组件，提供曲目、音量、循环、淡入淡出时间与死亡续播开关；不创建音源、不保存播放进度 |
+
+### Text：文字表现
+
+| 文件 | 职责 |
+|---|---|
+| Text/BlinkText.cs | 对同节点 TextMeshProUGUI 的透明度进行正弦变化，实现提示文字呼吸闪烁；当前使用游戏时间，暂停时停止闪烁 |
 
 ### Input：输入配置
 
@@ -118,6 +131,29 @@
 |---|---|
 | Levels/LevelExit.cs | 玩家进入出口 Trigger 时请求 LevelSession 加载 destinationScene；不携带旧关卡快照，也不自动生成返回出口 |
 | Levels/TransitionOverlay.cs | 根据 Alpha 绘制全屏黑色遮罩，仅负责过渡显示；由 LevelSession 自动补齐并控制，不执行死亡或读档逻辑 |
+
+## 场景背景音乐
+
+StartGame 的 ResourceSystem 已挂 SceneMusic，并指定 `Assets/Audio/StartGame.flac`。进入场景后自动从头播放并循环。MusicManager 在运行时自动创建并跨场景保留，无需手动挂载，不要在各场景重复添加音乐 AudioSource 或新的 AudioListener。
+
+| SceneMusic 字段 | 默认值 | 说明 |
+|---|---:|---|
+| music | StartGame 已指定，其余按关卡配置 | 当前场景曲目；留空或场景无启用配置时停止旧音乐 |
+| volume | 0.5 | 音源目标音量，范围 0～1 |
+| loop | true | 循环播放；素材首尾是否无缝仍取决于音频本身 |
+| fadeInDuration | 0.5 秒 | 新曲目从静音淡入的时间 |
+| fadeOutDuration | 0.3 秒 | 通过 LevelSession 正常换关时旧曲目淡出时间 |
+| continueOnDeathReload | true | 同一关卡死亡重载、曲目未改变时保留播放进度 |
+
+为后续关卡配置音乐：创建普通空物体并挂 SceneMusic，将该关卡 AudioClip 拖入 Music 字段。每个场景只允许一个启用的 SceneMusic；发现重复时会报错并停止音乐，避免不确定地选中某首。目前只有 StartGame 音乐资源，其他关卡暂时保持安静。可将同一首音乐临时配置到测试关卡验证续播。
+
+播放规则：首次进入场景或普通切换场景时从头播放，即使两个场景引用同一曲目也重启；返回 StartGame 从头播放菜单音乐。LevelSession 的死亡重载会明确传递死亡原因，只有同场景、相同曲目且启用 Continue On Death Reload 才续播，不重新调用 Play。关闭此选项后死亡重载也从头开始。非循环曲目播放完毕后，死亡续播不会让它重新响起。
+
+LevelSession.Travel 同时启动画面淡出与音乐淡出，两者完成后才加载；不把两个时长简单相加。Load 在加载前告知音乐系统是否为死亡重载，MusicManager 在 sceneLoaded 后读取新配置并播放。新音乐从场景加载完成开始淡入，可能早于玩家恢复操作。直接调用 SceneManager 切换也会应用新场景音乐，但没有旧音乐提前淡出的阶段，也不会被识别为死亡续播。
+
+音乐音源固定为 2D，不随角色距离改变；使用不受 Time.timeScale 影响的淡入淡出。当前暂停游戏时间不会自动暂停背景音乐。音乐与地图快照独立，不回滚到激活复活点时的播放位置。配置在场景加载时读取，运行中修改配置或禁用配置组件不会自动切歌；StopMusic 可显式停止当前播放。此版本仅由 Single 场景加载驱动音乐，Additive 加载不会抢占曲目。
+
+StartGame 音频使用 Streaming 与 Load In Background，保留立体声，以减少长音乐整段解压和同步加载的开销；音量需按实际设备试听调整。全局音量设置、AudioMixer 分组、音效和双音源交叉淡化尚未加入；将来可独立扩展，不需要更改机关存档协议。本次音乐接入不包含开始按钮跳转或返回菜单按钮，需由各自的界面入口发起场景切换。
 
 ## 接入与试玩
 
