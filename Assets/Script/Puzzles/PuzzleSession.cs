@@ -7,7 +7,7 @@ using UnityEngine.InputSystem;
 namespace GameClub.Puzzles
 {
     [DefaultExecutionOrder(-500), DisallowMultipleComponent]
-    public sealed class PuzzleSession : MonoBehaviour
+    public sealed class PuzzleSession : MonoBehaviour, ILevelRespawnHandler
     {
         public static PuzzleSession Instance { get; private set; }
         public Rigidbody2D PlayerBody;
@@ -22,23 +22,24 @@ namespace GameClub.Puzzles
             "hall_done", "bridge_done", "strength_done", "pendulum_routed", "laser_done", "fields_done"
         };
         public PuzzleRoom CurrentRoom { get; private set; }
-        public bool IsRespawning { get; private set; }
+        public bool IsRespawning => lifecycle && !lifecycle.CanControl && !completionPanel;
         public bool Completed { get; private set; }
-        public bool InputBlocked => IsRespawning || completionPanel;
+        public bool InputBlocked => IsRespawning || completionPanel || activeStoryLog;
         public int DeathCount { get; private set; }
         public string[] ActiveFlags => new List<string>(flags).ToArray();
 
         private readonly HashSet<string> flags = new HashSet<string>();
-        private PlayerController2D controller;
+        private PlayerLifecycle lifecycle;
         private Collider2D playerCollider;
         private PuzzlePlayerEnvironment environment;
         private PlayerInteractionPicker picker;
         private Vector2 fallbackSpawn;
         private bool fallbackUpward;
-        private bool controllerWasEnabled = true;
-        private bool bodyWasSimulated = true;
         private bool completionPanel;
-        private float respawnAt;
+        private bool resetRoomOnRespawn;
+        private StoryLogInteractable activeStoryLog;
+        private PlayerInputReader storyInput;
+        private float timeScaleBeforeStory;
         private float protectedUntil;
         private string controlHint;
         private float controlHintUntil;
@@ -69,7 +70,7 @@ namespace GameClub.Puzzles
         {
             if (!PlayerBody) return;
             if (!Gravity) Gravity = PlayerBody.GetComponent<GravityBody2D>();
-            controller = PlayerBody.GetComponent<PlayerController2D>();
+            lifecycle = PlayerBody.GetComponent<PlayerLifecycle>();
             playerCollider = PlayerBody.GetComponent<Collider2D>();
             environment = PlayerBody.GetComponent<PuzzlePlayerEnvironment>();
             picker = PlayerBody.GetComponent<PlayerInteractionPicker>();
@@ -78,9 +79,9 @@ namespace GameClub.Puzzles
         private void Start()
         {
             CachePlayer();
-            if (!PlayerBody || !Gravity)
+            if (!PlayerBody || !Gravity || !lifecycle)
             {
-                Debug.LogError("PuzzleSession needs the scene's Player Rigidbody2D and GravityBody2D.", this);
+                Debug.LogError("PuzzleSession needs the scene's Player Rigidbody2D, GravityBody2D and PlayerLifecycle.", this);
                 enabled = false;
                 return;
             }
@@ -103,11 +104,7 @@ namespace GameClub.Puzzles
         private void Update()
         {
             if (!PlayerBody) return;
-            if (IsRespawning)
-            {
-                if (Time.unscaledTime >= respawnAt) FinishRespawn();
-                return;
-            }
+            if (IsRespawning || activeStoryLog) return;
             if (Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
             {
                 ResetRoom();
@@ -162,59 +159,47 @@ namespace GameClub.Puzzles
             protectedUntil = Time.unscaledTime + 0.35f;
         }
 
+        public string CurrentCheckpointId => CurrentRoom ? CurrentRoom.roomId : null;
+
         public void KillPlayer(string reason)
         {
-            if (!PlayerBody || IsRespawning || completionPanel || Time.unscaledTime < protectedUntil) return;
-            DeathCount++;
-            BeginRespawn(string.IsNullOrEmpty(reason) ? "返回检查点" : reason);
+            if (!PlayerBody || !lifecycle || !lifecycle.CanControl || InputBlocked
+                || Time.unscaledTime < protectedUntil) return;
+            lifecycle.RequestDeath();
+            if (lifecycle.State == PlayerLifeState.Dying) DeathCount++;
         }
 
         public void ResetRoom()
         {
-            if (!PlayerBody || IsRespawning) return;
+            if (!PlayerBody || !lifecycle || IsRespawning || activeStoryLog) return;
             DismissCompletion();
             Completed = false;
-            BeginRespawn("已复位当前房间");
+            lifecycle.RequestDeath();
+            resetRoomOnRespawn = lifecycle.State == PlayerLifeState.Dying;
         }
 
-        private void BeginRespawn(string reason)
+        // LevelSession owns timing, input locks, transition and revival animation.
+        // Only an explicit room restart resets puzzle state.
+        public void RestoreCheckpoint(PlayerLifecycle restoringPlayer)
         {
-            IsRespawning = true;
-            respawnAt = Time.unscaledTime + Mathf.Max(0f, respawnDelay);
-            controllerWasEnabled = !controller || controller.enabled;
-            bodyWasSimulated = PlayerBody.simulated;
-            if (controller) controller.enabled = false;
-            if (picker) picker.ClearSelection();
-            PlayerBody.velocity = Vector2.zero;
-            PlayerBody.angularVelocity = 0f;
-            PlayerBody.simulated = false;
-            if (!exchangeControlsShown) ShowControlHint("R 复位当前房间", 5f);
-        }
-
-        private void FinishRespawn()
-        {
+            if (!restoringPlayer || restoringPlayer != lifecycle)
+                throw new System.InvalidOperationException("Room restoration received another player.");
+            bool resetRoom = resetRoomOnRespawn;
+            resetRoomOnRespawn = false;
             Vector3 before = PlayerBody.transform.position;
-            if (CurrentRoom) CurrentRoom.ResetRoomState();
+            completionPanel = false;
+            if (resetRoom && CurrentRoom) CurrentRoom.ResetRoomState();
             Vector2 spawn = CurrentRoom ? CurrentRoom.spawnPoint : fallbackSpawn;
-            bool up = CurrentRoom ? CurrentRoom.spawnUpward : fallbackUpward;
-            if (environment) environment.ResetEnvironment();
-            Gravity.ResetGravity(up);
-            PlayerBody.position = spawn;
-            PlayerBody.transform.position = new Vector3(spawn.x, spawn.y, before.z);
-            PlayerBody.velocity = Vector2.zero;
-            PlayerBody.angularVelocity = 0f;
-            PlayerBody.GetComponent<PlayerGroundProbe>()?.LeaveGround();
-            var input = PlayerBody.GetComponent<PlayerInputReader>();
-            if (input) input.Consume(out _, out _, out _);
-            var dash = PlayerBody.GetComponent<PlayerDash>();
-            var motor = PlayerBody.GetComponent<PlayerHorizontalMotor>();
-            if (dash) dash.Prepare(true, motor ? motor.groundMaxSpeed : 7f);
+            bool up = resetRoom ? (CurrentRoom ? CurrentRoom.spawnUpward : fallbackUpward) : Gravity.isGravityFlipped;
+            float strength = !resetRoom && environment ? environment.strength : 1f;
+            restoringPlayer.PlaceForRevival(new Vector3(spawn.x, spawn.y, before.z));
+            // Keep exchanged polarity and the terminal setting, then let the spawn's field apply normally.
+            if (environment) environment.ResetEnvironment(strength);
+            Gravity.ResetGravity(up, strength);
             Physics2D.SyncTransforms();
-            PlayerBody.simulated = bodyWasSimulated;
-            if (controller) controller.enabled = controllerWasEnabled;
-            IsRespawning = false;
-            protectedUntil = Time.unscaledTime + Mathf.Max(0.1f, respawnProtection);
+            protectedUntil = Time.unscaledTime + (lifecycle ? lifecycle.reviveDuration : 0f) + Mathf.Max(0.1f, respawnProtection);
             SnapFollowCameras(PlayerBody.transform.position - before);
+            if (!exchangeControlsShown) ShowControlHint("R 复位当前房间", 5f);
         }
 
         private void SnapFollowCameras(Vector3 delta)
@@ -228,30 +213,57 @@ namespace GameClub.Puzzles
             }
         }
 
+        internal bool BeginStory(StoryLogInteractable log)
+        {
+            if (!log || !lifecycle || !lifecycle.CanControl || InputBlocked) return false;
+            activeStoryLog = log;
+            timeScaleBeforeStory = Time.timeScale;
+            storyInput = PlayerBody.GetComponent<PlayerInputReader>();
+            if (storyInput) storyInput.SetGameplayEnabled(false);
+            if (picker) picker.ClearSelection();
+            // Protect the reader from moving hazards without changing the player or puzzle state.
+            Time.timeScale = 0f;
+            return true;
+        }
+
+        internal bool IsReading(StoryLogInteractable log) => ReferenceEquals(activeStoryLog, log);
+
+        internal void EndStory(StoryLogInteractable log)
+        {
+            if (ReferenceEquals(log, null) || !IsReading(log)) return;
+            activeStoryLog = null;
+            Time.timeScale = timeScaleBeforeStory;
+            if (storyInput) storyInput.SetGameplayEnabled(lifecycle && lifecycle.CanControl);
+            storyInput = null;
+        }
+
         public void Complete()
+        {
+            if (!CompletionRequirementsMet()) return;
+            Completed = true;
+            if (!completionPanel && lifecycle) lifecycle.SetState(PlayerLifeState.Restoring);
+            completionPanel = true;
+            if (picker) picker.ClearSelection();
+        }
+
+        internal void CompleteTransmission()
+        {
+            if (CompletionRequirementsMet()) Completed = true;
+        }
+
+        private bool CompletionRequirementsMet()
         {
             if (requiredFlags != null)
                 foreach (string requirement in requiredFlags)
-                    if (!string.IsNullOrEmpty(requirement) && !Solved(requirement))
-                    {
-                        return;
-                    }
-            Completed = true;
-            if (!completionPanel)
-            {
-                controllerWasEnabled = !controller || controller.enabled;
-                if (controller) controller.enabled = false;
-                if (PlayerBody) PlayerBody.velocity = Vector2.zero;
-            }
-            completionPanel = true;
-            if (picker) picker.ClearSelection();
+                    if (!string.IsNullOrEmpty(requirement) && !Solved(requirement)) return false;
+            return true;
         }
 
         private void DismissCompletion()
         {
             if (!completionPanel) return;
             completionPanel = false;
-            if (controller) controller.enabled = controllerWasEnabled;
+            if (lifecycle) lifecycle.SetState(PlayerLifeState.Playing);
         }
 
         private void ShowControlHint(string message, float duration)
@@ -281,22 +293,33 @@ namespace GameClub.Puzzles
                         return;
                     }
             }
-            if (!terminalControlsShown && InteractableBase.FindNearest(playerCollider) is PuzzleTerminal)
+            if (!terminalControlsShown)
             {
-                terminalControlsShown = true;
-                ShowControlHint("F 操作终端", 4f);
+                InteractableBase target = InteractableBase.FindNearest(playerCollider);
+                if (target is PuzzleTerminal || target is StoryLogInteractable)
+                {
+                    terminalControlsShown = true;
+                    ShowControlHint(target is StoryLogInteractable ? "F 阅读记录" : "F 操作终端", 4f);
+                }
             }
+        }
+
+        internal Font GetReadingFont()
+        {
+            if (!font)
+                font = Font.CreateDynamicFontFromOSFont(new[] { "Microsoft YaHei", "Noto Sans CJK SC", "Arial" }, 20);
+            return font;
         }
 
         private void EnsureStyles()
         {
             if (headingStyle != null) return;
-            font = Font.CreateDynamicFontFromOSFont(new[] { "Microsoft YaHei", "Noto Sans CJK SC", "Arial" }, 20);
-            headingStyle = new GUIStyle(GUI.skin.label) { font = font, fontSize = 21, fontStyle = FontStyle.Bold, wordWrap = true };
-            bodyStyle = new GUIStyle(GUI.skin.label) { font = font, fontSize = 17, wordWrap = true };
-            hintStyle = new GUIStyle(GUI.skin.label) { font = font, fontSize = 16, wordWrap = true };
+            Font readingFont = GetReadingFont();
+            headingStyle = new GUIStyle(GUI.skin.label) { font = readingFont, fontSize = 21, fontStyle = FontStyle.Bold, wordWrap = true };
+            bodyStyle = new GUIStyle(GUI.skin.label) { font = readingFont, fontSize = 17, wordWrap = true };
+            hintStyle = new GUIStyle(GUI.skin.label) { font = readingFont, fontSize = 16, wordWrap = true };
             centerStyle = new GUIStyle(bodyStyle) { alignment = TextAnchor.MiddleCenter };
-            buttonStyle = new GUIStyle(GUI.skin.button) { font = font, fontSize = 18 };
+            buttonStyle = new GUIStyle(GUI.skin.button) { font = readingFont, fontSize = 18 };
             headingStyle.normal.textColor = Color.white;
             bodyStyle.normal.textColor = Color.white;
             hintStyle.normal.textColor = new Color(0.84f, 0.91f, 0.94f);
@@ -346,6 +369,8 @@ namespace GameClub.Puzzles
             }
             GUI.matrix = old;
         }
+
+        private void OnDisable() => EndStory(activeStoryLog);
 
         private void OnDestroy()
         {

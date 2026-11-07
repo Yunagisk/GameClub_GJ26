@@ -13,6 +13,8 @@ namespace GameClub.Player
         [SerializeField] private Camera pickCamera;
         [SerializeField] private Collider2D actorCollider;
         [SerializeField] private LayerMask pickLayers = (1 << 8) | (1 << 9);
+        [Tooltip("Require the selected object to remain inside the gameplay camera before exchanging gravity.")]
+        public bool requireVisibleTargetForExchange = true;
         public Collider2D Hovered { get; private set; }
         public Behaviour SelectedTarget => selected;
         public event Action Interacted;
@@ -23,15 +25,24 @@ namespace GameClub.Player
         private readonly Plane[] frustumPlanes = new Plane[6];
         private PlayerInputReader input;
         private IGravityExchange player;
+        private PlayerLifecycle lifecycle;
 
-        private bool Blocked => GameClub.Puzzles.PuzzleSession.Instance
-            && GameClub.Puzzles.PuzzleSession.Instance.InputBlocked;
+        private bool Blocked
+        {
+            get
+            {
+                if (!isActiveAndEnabled || (lifecycle && !lifecycle.CanControl)) return true;
+                var session = GameClub.Puzzles.PuzzleSession.Instance;
+                return session && session.InputBlocked;
+            }
+        }
 
         private void Awake()
         {
             input = GetComponent<PlayerInputReader>();
             if (!actorCollider) actorCollider = GetComponent<Collider2D>();
             player = GetComponent<IGravityExchange>();
+            lifecycle = GetComponent<PlayerLifecycle>();
             marker = GetComponent<GravitySelectionMarker>();
             var playerInput = GetComponent<PlayerInput>();
             if (!pickCamera && playerInput) pickCamera = playerInput.camera;
@@ -61,9 +72,14 @@ namespace GameClub.Player
 
         private void Update()
         {
-            if (!ReferenceEquals(selected, null) && (!selected || !selected.isActiveAndEnabled || !SelectedIsVisible()))
+            if (Blocked)
+            {
+                Hovered = null;
                 ClearSelection();
-            if (Blocked) { Hovered = null; return; }
+                return;
+            }
+            if (!ReferenceEquals(selected, null) && (!selected || !selected.isActiveAndEnabled
+                || (requireVisibleTargetForExchange && !SelectedIsVisible()))) ClearSelection();
             Pick();
         }
 
@@ -129,8 +145,8 @@ namespace GameClub.Player
 
         private void Exchange()
         {
-            if (Blocked || PointerHitsUI() || !selected || !selected.isActiveAndEnabled || player.isExchangeCooldown) return;
-            if (!SelectedIsVisible()) { ClearSelection(); return; }
+            if (Blocked || player == null || PointerHitsUI() || !selected || !selected.isActiveAndEnabled || player.isExchangeCooldown) return;
+            if (requireVisibleTargetForExchange && !SelectedIsVisible()) { ClearSelection(); return; }
             var target = (IGravityExchange)selected;
             if (!target.isExchangeCooldown) player.ExchangeGravity(target);
         }

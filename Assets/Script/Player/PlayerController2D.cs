@@ -8,14 +8,15 @@ namespace GameClub.Player
     [RequireComponent(typeof(PlayerInteractionPicker))]
     public sealed class PlayerController2D : MonoBehaviour
     {
-        private GravityBody2D gravityBody;
-        public bool isGravityFlipped => gravityBody.isGravityFlipped;
-        public bool isGrounded => ground.isGrounded;
+        private GravityBody2D gravityBody;      
         private PlayerInputReader input;
         private PlayerGroundProbe ground;
         private PlayerHorizontalMotor motor;
         private PlayerJump jump;
         private PlayerDash dash;
+
+        public bool isGravityFlipped => gravityBody.isGravityFlipped;
+        public bool isGrounded => ground.isGrounded;
 
         private void Awake()
         {
@@ -25,11 +26,13 @@ namespace GameClub.Player
             motor = GetComponent<PlayerHorizontalMotor>();
             jump = GetComponent<PlayerJump>();
             dash = GetComponent<PlayerDash>();
+
             var body = GetComponent<Rigidbody2D>();
             body.bodyType = RigidbodyType2D.Dynamic;
             body.constraints |= RigidbodyConstraints2D.FreezeRotation;
             body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
             body.interpolation = RigidbodyInterpolation2D.Interpolate;
+
             if (!GetComponent<Collider2D>())
             {
                 Debug.LogError("Add a solid Collider2D to the player root.", this);

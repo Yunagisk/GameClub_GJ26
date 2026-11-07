@@ -9,8 +9,10 @@ namespace GameClub.Player
         [SerializeField] private Collider2D playerCollider;
         [SerializeField] private LayerMask groundLayers = Physics2D.DefaultRaycastLayers;
         [Min(0.001f)] public float groundCheckDistance = 0.06f;
+
         public Vector2 groundCheckSize = new Vector2(0.65f, 0.06f);
         public bool isGrounded { get; private set; }
+
         private readonly List<RaycastHit2D> hits = new List<RaycastHit2D>(8);
         private Rigidbody2D body;
         private GravityBody2D gravityBody;
@@ -19,7 +21,7 @@ namespace GameClub.Player
         {
             gravityBody = GetComponent<GravityBody2D>();
             body = GetComponent<Rigidbody2D>();
-            if (!playerCollider) playerCollider = GetComponent<Collider2D>();
+            playerCollider = GetComponent<Collider2D>();
         }
 
         public void Refresh()
