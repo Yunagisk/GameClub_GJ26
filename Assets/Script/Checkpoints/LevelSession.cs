@@ -63,7 +63,13 @@ namespace GameClub.Player
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
-            if (!internalLoad) StartCoroutine(EnterLoadedScene(scene));
+            if (internalLoad) return;
+            // An external load replaces any old entry UI wait; it must not unlock the new player.
+            StopAllCoroutines();
+            pendingDeath = null;
+            pendingDestination = null;
+            pendingStartGame = false;
+            StartCoroutine(EnterLoadedScene(scene));
         }
 
         private IEnumerator EnterLoadedScene(Scene scene)
@@ -78,7 +84,7 @@ namespace GameClub.Player
                 FinishFailure();
                 yield break;
             }
-            yield return Reveal();
+            yield return Reveal(presentOpening: true);
         }
 
         private void Update()
@@ -225,7 +231,7 @@ namespace GameClub.Player
             }
             float remainingBlack = blackUntil - Time.realtimeSinceStartup;
             if (remainingBlack > 0f) yield return new WaitForSecondsRealtime(remainingBlack);
-            yield return Reveal(revealDuration);
+            yield return Reveal(revealDuration, restore == null);
         }
 
         private bool TryInitialize(Scene scene, LevelSnapshot restore)
@@ -336,8 +342,21 @@ namespace GameClub.Player
             }
         }
 
-        private IEnumerator Reveal(float durationOverride = -1f)
+        private IEnumerator Reveal(float durationOverride = -1f, bool presentOpening = false)
         {
+            ILevelEntryPresentation presentation = null;
+            MonoBehaviour presentationOwner = null;
+            if (presentOpening)
+                foreach (var component in FindInScene<MonoBehaviour>(SceneManager.GetActiveScene()))
+                    if (component && component.isActiveAndEnabled && component is ILevelEntryPresentation candidate)
+                    {
+                        if (candidate.BeginPresentation())
+                        {
+                            presentation = candidate;
+                            presentationOwner = component;
+                        }
+                        break;
+                    }
             IsRestoring = false;
             Physics2D.simulationMode = normalSimulation;
             yield return null; // Camera aligns before the black overlay is removed.
@@ -345,6 +364,11 @@ namespace GameClub.Player
             float duration = durationOverride >= 0f ? durationOverride : fadeInDuration;
             yield return Fade(0f, duration);
             yield return new WaitForSecondsRealtime(Mathf.Max(0f, revivalTime - duration));
+            if (presentationOwner && presentationOwner.isActiveAndEnabled)
+            {
+                overlay.BlocksInput = false; // The briefing canvas now owns UI input; gameplay stays locked.
+                yield return presentation.WaitForDismissal();
+            }
             if (player) player.SetState(PlayerLifeState.Playing);
             busy = false;
             overlay.BlocksInput = false;

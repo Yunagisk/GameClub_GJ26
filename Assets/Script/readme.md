@@ -43,7 +43,22 @@
 
 ## 文件职责（完整分类索引）
 
-以下集中列出本目录全部 28 个 C# 文件与输入动作资产。路径相对 `Assets/Script`。普通组件挂载到对应 GameObject；接口和数据类不挂载。实现存档接口的组件，只有在同节点存在 SaveableEntity 时才会被收集。
+以下列出基础控制器、存档系统及开场说明相关文件。路径相对 `Assets/Script`。普通组件挂载到对应 GameObject；接口和数据类不挂载。实现存档接口的组件，只有在同节点存在 SaveableEntity 时才会被收集。
+
+### UI：可复用告示面板
+
+| 文件 | 职责 |
+|---|---|
+| UI/NoticePanelView.cs | 告示 Prefab 的显示组件，填充标题、来源、正文和按钮文字，重置滚动位置、分发确认事件；不处理暂停、关卡或存档业务 |
+
+### SceneSwitch：开始菜单与关卡开场说明
+
+| 文件 | 职责 |
+|---|---|
+| SceneSwitch/StartGameController.cs | 订阅开始按钮，一次点击直接请求加载 TestScene；成功后禁用按钮、停止文字闪烁，不再创建调查说明 |
+| SceneSwitch/OpeningBriefingUI.cs | TestScene 的开场说明业务组件；实例化告示 Prefab 并传入文案，管理阅读暂停与确认，不再用代码搭建面板布局 |
+| Checkpoints/ILevelEntryPresentation.cs | 关卡入场表现接口：BeginPresentation 在淡入前准备说明，WaitForDismissal 等待用户确认；由 LevelSession 调用，接口本身不挂载 |
+| Puzzles/PuzzleSession.cs | 管理当前解谜关卡的房间、标记、复位、阅读和教学；首次移动教学推迟到玩家实际获得控制后开始计时，阅读期间受已有生命周期锁保护 |
 
 ### Input：输入配置
 
@@ -291,3 +306,43 @@ SaveableEntity 决定存档范围，Layer 继续用于原有碰撞和鼠标选�
 - 为避免与新组件重名，旧动画枚举改为 `PlayerVisualState`。原状态 0–6 不变，新增 GravityFlip=7、Death=8、Revive=9。
 - 新图集位于 `Assets/Sprite/Player`，动画片段位于 `Assets/Animations/Player/Clips`；待机、冲刺、下落片段在原资产上更新，保留旧 GUID。原始帧统一归档到 `SourceArt/OriginalAnimationFrames`，SHA256 记录见该目录的 `animation-merge-20261106.json`。
 - 已通过运行时代码编译和 19 项 Unity 专项检查，覆盖正式死亡/复活动画、倒挂复活、当前房间复位、前房进度、重力参数存档与新测试场景死亡重载；没有重新进行整张主地图连续通关。
+
+
+## TestScene 开场调查说明
+
+流程已改为：StartGame 点击屏幕 → 黑屏加载 TestScene → 显示关卡与「调查记录 01」面板 → 点击「进入调查」→ 关闭面板并开放操作。StartGame 不再多出一次剧情确认。文案保留在 TestScene 根节点 `Opening Briefing` 的 OpeningBriefingUI.Opening Text；Panel Prefab 已指定 NoticePanel。字体、图片、按钮和排版统一在 Prefab 中修改。
+
+LevelSession 在新关卡初始化完成后、淡入前调用入场表现接口。面板显示时保存原 Time.timeScale 并设为 0，玩家仍处于入场锁定状态，输入、刚体、鼠标选择与重力交换不会启用；现有机关随游戏时间暂停。淡入与入场占位结束后，过渡遮罩放行 UI 点击，说明面板继续阻挡背景，确认按钮才可使用。音乐与 UI 正常工作。
+
+确认后仍锁定一个额外帧，随后还原之前的时间缩放、隐藏面板，再由 LevelSession 统一开放玩家操作并清理输入缓存，避免确认点击同时选中箱子。重复确认无额外效果。PuzzleSession 在实际获得控制时重新开始 6 秒移动教学，并重新计算出生保护时间，阅读多久都不会消耗掉首次教学。
+
+每次从菜单开始或直接运行 TestScene 都会显示说明；本次游戏的死亡恢复和 R 房间复位不显示。按快照重载关卡时也不会触发入场说明。普通外部重新加载 TestScene 视为一次新的场景进入，会再次展示。组件不跨场景保留，不参与地图快照。卸载场景或禁用组件时会释放它持有的暂停，防止时间缩放残留；外部切场景同时取消旧入场等待，避免旧流程操作新玩家。
+
+UI 使用独立 Screen Space Overlay Canvas（排序 100，参考分辨率 1920×1080，宽高匹配 0.5），低于黑屏过渡 Canvas。确认按钮文字为「进入调查」，采用现有 UGUI Text 和序列化中文 Font，不新增字体资源。TestScene 无 EventSystem 时自动创建场景内的 EventSystem 与 InputSystemUIInputModule；已经存在时复用。每关只放一个启用的入场表现组件，Prefab 与正文缺失会报错并跳过说明，避免玩家被永久锁住。
+
+未来若机关使用 unscaledDeltaTime、真实时间或独立协程推进，应额外遵循阅读暂停状态；Time.timeScale = 0 只会冻结依赖游戏时间和常规物理步的逻辑。暂停菜单等新系统也应统一管理暂停所有权，避免多个界面分别改写时间缩放。
+
+
+## 告示面板 Prefab 与美术替换
+
+资源位于 `Assets/Prefabs/UI/NoticePanel.prefab`。开场调查说明，以及 TestScene 内 6 个 Notice／Maintenance 类型记录已绑定同一个 Prefab。Terminal 和 Transmission 仍使用原来的电子阅读界面及通信逻辑，未替换为纸质告示。
+
+双击 Prefab 可在 Prefab Mode 统一修改外观：
+
+| 节点／组件 | 职责与默认配置 |
+|---|---|
+| 根节点 Canvas / CanvasScaler | Screen Space Overlay，排序 100，参考 1920×1080，宽高匹配 0.5 |
+| Dimmer | 全屏暗色遮罩，透明度 0.72，拦截背景点击 |
+| SafeArea / Board | 面板保持 1971:777 比例，Fit In Parent；避免拉伸纸张和边框 |
+| PaperBackground | 使用「弹窗-1告示.png」，白色 Image 颜色保留素材原色 |
+| Decoration | 使用「弹窗-2告示.png」，独立矩形保持图片比例，布条与植物作为装饰层 |
+| Heading / Source | 深灰标题与来源；避让顶部布条，标题字号上限 46，过长时最低缩到 28 |
+| BodyScroll / Viewport / Body | 正文字号 30、行距 1.2；正文自动增长，RectMask2D 裁切，支持滚轮与拖动，超长时显示右侧滚动条 |
+| Confirm / Label | 固定在右下安全区域，不随正文滚动；由业务传入「进入调查」或「结束阅读」 |
+| NoticePanelView | Inspector 中保存文字、按钮和 ScrollRect 的引用，不要删除这些引用 |
+
+图片和文字不接收射线；遮罩、滚动区和按钮按各自用途接收射线。素材没有修改像素或强行拉长，不使用没有边界设置的九宫格。两张图片比例不同，因此装饰层单独排布，不与底板拉成相同尺寸。
+
+内容与外观分开管理：开场文案改 OpeningBriefingUI 的 Opening Text；普通告示／手记改对应 StoryLogInteractable 的 Title、Source、Body 或 Locked Body，Notice Panel Prefab 指定该 Prefab。业务值不会写回共享 Prefab。新建普通告示或手记时必须指定此引用；缺失会报错并立即退出阅读，避免残留暂停。每个记录按需创建并复用自己的面板实例，重新打开滚动回顶部，销毁记录时清理面板。
+
+开场仍在确认后开放操作；普通记录保留 F／Esc／E 关闭与原有锁定条件。关闭按钮、禁用或销毁交互物均会退出阅读并还原时间缩放。电子终端与传输的条件判断、回执和完成标记保持在 StoryLogInteractable，不写入通用视图。没有 EventSystem 时，视图创建场景内的 InputSystemUIInputModule；不额外创建常驻 UI 单例。

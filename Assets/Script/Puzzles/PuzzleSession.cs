@@ -46,6 +46,7 @@ namespace GameClub.Puzzles
         private float controlHintStarted;
         private float nextControlCheck;
         private bool exchangeControlsShown, terminalControlsShown;
+        private bool initialControlsShown;
         private Collider2D[] exchangeHintTargets;
         private Font font;
         private GUIStyle headingStyle, bodyStyle, hintStyle, centerStyle, buttonStyle;
@@ -98,13 +99,18 @@ namespace GameClub.Puzzles
                 if (target) targets.Add(target);
             }
             exchangeHintTargets = targets.ToArray();
-            ShowControlHint("A / D 移动   ·   W 跳跃   ·   Shift 冲刺", 6f);
         }
 
         private void Update()
         {
             if (!PlayerBody) return;
             if (IsRespawning || activeStoryLog) return;
+            if (!initialControlsShown && !InputBlocked)
+            {
+                initialControlsShown = true;
+                protectedUntil = Time.unscaledTime + respawnProtection;
+                ShowControlHint("A / D 移动   ·   W 跳跃   ·   Shift 冲刺", 6f);
+            }
             if (Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
             {
                 ResetRoom();
