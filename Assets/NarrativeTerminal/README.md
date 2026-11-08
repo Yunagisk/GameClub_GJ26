@@ -16,10 +16,14 @@
 2. 把 `NarrativeLogTerminal.prefab` 拖到想要的位置，可以复制多个。
 3. 给每个终端换 `Log Asset`，或直接编辑 `ExampleLog.asset`。
 4. 如果打开终端时要冻结角色：把角色的移动脚本拖到终端的 `Player Control Scripts`。
+5. 每个终端默认会自动生成一个 `InteractionRange` 子物体，**玩家靠近时才显示**交互范围，离开后淡出：
+   - `Show Interaction Range`：关掉就完全不显示；
+   - `Range Color`：范围圈颜色；
+   - 范围圈会自动跟随 `Interaction Radius`，不用手动改大小。
 
 ## 预览
 
-打开 `Demo/NarrativeTerminalDemo.unity`，按 Play。场景里有一个不可见的交互探针，所以会直接出现“按 F 读取终端”的提示。
+打开 `Demo/NarrativeTerminalDemo.unity`，按 Play。场景里有一个不可见的交互探针，所以会直接出现“按 F 打开日志”的提示；靠近终端时脚下会显示一圈金色交互范围，移远后淡出。
 
 - `F`：打开 / 关闭
 - `Esc`：关闭

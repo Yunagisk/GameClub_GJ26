@@ -152,7 +152,9 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   interactionRadius: 2.1
-  promptText: "\u6309 F \u8BFB\u53D6\u7EC8\u7AEF"
+  promptText: "\u6309 F \u6253\u5F00\u65E5\u5FD7"
+  showInteractionRange: 1
+  rangeColor: {r: 0.89, g: 0.69, b: 0.37, a: 1}
   ui: {fileID: 0}
   freezePlayer: 1
   freezeRigidbody: 1
