@@ -26,7 +26,12 @@ namespace Chuangyou.Narrative
         [SerializeField] private string playerTag = "Player";
         [SerializeField] private LayerMask playerLayers = ~0;
         [SerializeField] private float interactionRadius = 1.8f;
-        [SerializeField] private string promptText = "按 F 读取终端";
+        [SerializeField] private string promptText = "按 F 打开日志";
+
+        [Header("区域显示")]
+        [Tooltip("在游戏画面里显示交互范围，靠近时高亮。")]
+        [SerializeField] private bool showInteractionRange = true;
+        [SerializeField] private Color rangeColor = new Color(0.89f, 0.69f, 0.37f, 1f);
 
         [Header("引用（留空会自动查找）")]
         [SerializeField] private NarrativeTerminalUI ui;
@@ -57,6 +62,7 @@ namespace Chuangyou.Narrative
         private RigidbodyConstraints2D cachedConstraints;
         private MonoBehaviour[] cachedControlScripts;
         private bool[] cachedControlStates;
+        private NarrativeInteractionRangeVisual rangeVisual;
 
         public bool IsOpen
         {
@@ -66,6 +72,11 @@ namespace Chuangyou.Narrative
         public bool PlayerInRange
         {
             get { return playerInRange; }
+        }
+
+        public float InteractionRadius
+        {
+            get { return interactionRadius; }
         }
 
         private void Start()
@@ -82,6 +93,8 @@ namespace Chuangyou.Narrative
                     "请先用菜单 工具 > 创优工坊 > 剧情日志终端 > 创建终端 UI。",
                     this);
             }
+
+            EnsureRangeVisual();
         }
 
         private void Update()
@@ -356,6 +369,21 @@ namespace Chuangyou.Narrative
             {
                 audioSource.PlayOneShot(clip);
             }
+        }
+
+        private void EnsureRangeVisual()
+        {
+            if (!showInteractionRange || rangeVisual != null)
+            {
+                return;
+            }
+
+            GameObject visualObject = new GameObject("InteractionRange");
+            visualObject.transform.SetParent(transform, false);
+            visualObject.transform.localPosition = Vector3.zero;
+
+            rangeVisual = visualObject.AddComponent<NarrativeInteractionRangeVisual>();
+            rangeVisual.Initialize(this, rangeColor);
         }
 
         private void ResolveUI()
