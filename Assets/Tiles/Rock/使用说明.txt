@@ -1,0 +1,39 @@
+岩石瓦片：使用说明
+
+已经放入当前 GameClub_GJ26 项目，无需再次导入 unitypackage。
+
+一、这次做了什么
+两张原图均为 192×64 RGBA PNG，全部像素不透明。完整保留原画，按 64×64 从左到右各切成 3 块，共 6 块。
+纹理：Assets/Sprite/Environment/Rock/Rock_A.png、Rock_B.png。
+切片名称：Rock_A_01～03、Rock_B_01～03；PPU=64，中心 pivot，1 格对应 1 个 Unity 世界单位。
+导入关闭纹理压缩和 mipmaps，使用 Point 过滤，保留当前小尺寸原画的清晰度。
+已创建 6 个 Tile 资源、RockPalette 画板、RockGrid 空白地图预制体、RockDemo 示例预制体。
+
+二、最快使用方法
+1. 在 Project 找到 Assets/Tiles/Rock/Prefabs/RockGrid.prefab，把它拖到当前场景的 Hierarchy。
+2. 展开 RockGrid，选中 Ground。根对象保持 Scale=(1,1,1)，需要移动整张地图时移动根对象。
+3. 打开 Window > 2D > Tile Palette，画板下拉选择 RockPalette。
+4. 在 Active Tilemap 下拉确认选的是刚拖入场景的 Ground，而不是 Background。
+5. 在画板上选一块或框选一整排三块，再选择画笔，在 Scene 窗口绘制；橡皮工具可擦除。
+6. 绘制背景时，把 Active Tilemap 改成 Background。画板中的 Edit Palette 只用于修改画板，不用于画关卡。
+
+三、碰撞与图层
+Ground 已配置在你项目的 Ground 层（索引 3），有 TilemapCollider2D、CompositeCollider2D 和 Static Rigidbody2D。
+实体格子合并碰撞；可以站在地板上，也能在反向重力时接触天花板。碰撞材质摩擦与弹性均为 0。
+Background 是较暗的背景层，排序为 -20，没有任何碰撞组件。
+使用 RockGrid 时不需要再手动添加重复碰撞组件。
+
+四、示例
+Assets/Tiles/Rock/Prefabs/RockDemo.prefab 已拼好地板、墙、天花板和三个平台，可拖到空白场景查看。
+示例没有角色、相机或游戏流程；测试时使用项目已有角色和相机，保证角色出生在空处。
+RockDemo 与 RockGrid 二选一作为起点即可，避免在相同位置叠放两套地形。
+
+五、当前素材边界
+这套是实心岩石纹理，所有单格碰撞都是完整方格，适合实体地形和背景填充。
+原图首尾没有保证无缝；优先按 01、02、03 的原始顺序成组铺设，连续重复时仍可能看出接缝。
+未补画草边、透明岩石外沿、内凹角或自动拼接 RuleTile。需要自然轮廓时，可追加对应美术素材。
+本次没有修改你已有场景，也没有提交或推送 Git。
+
+六、交付文件
+RockTiles.unitypackage 是这套资源的备份，复制到其他 Unity 项目时可用 Assets > Import Package > Custom Package 导入。
+其他项目需要安装 2D Tilemap Editor，并核对 Ground 层与角色的地面检测 LayerMask 是否匹配。

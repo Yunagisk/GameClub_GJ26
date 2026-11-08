@@ -1,0 +1,63 @@
+重力能源基地 · 道具素材包 V01
+
+已经导入当前项目 D:\CodeProject\GameClub_GJ26。
+24 张独立透明 PNG + 24 个单件美术 Prefab + 6 个组合状态 Prefab。
+图片由内置 image_gen 生成；完整提示词保存在“全部生成提示词.json”。
+
+一、现在怎么用（当前项目不用再次导包）
+1. Unity 的 Project 窗口打开 Assets > Art > GravityPropsV01。
+2. Prefabs：24 件单件道具，直接拖入 Scene 或 Hierarchy。
+3. Assemblies：已拼好的 Gate_Closed/Open、Core_Active/Dormant、Hazard_Active/Dormant。
+4. Textures：原始透明 PNG；点击左侧小三角可展开唯一的 Sprite。每张只是一件道具，不是瓦片图集。
+5. 平移道具放到需要的位置即可。地面道具以主体底部为锚点，藤蔓/电缆以顶部为锚点；箱体、核心、管道、横梁以中心为锚点。
+6. 已设置 100 PPU、Bilinear、透明通道、关闭 Mipmap 和有损压缩；Prefab 已按角色约 2 单位高配好建议尺寸，不需要自己按整张大图重新缩放。
+
+二、重力箱如何替换
+先保留原 GravityBox 的物理和脚本组件。单独的 GravityCrate Prefab 是美术件，不会自动交换重力。
+可把它作为原箱子的子物体，位置归零；原箱子若缩放为 1.6，子物体的世界尺寸会再放大，需要把新美术当前缩放除以 1.6，再检查与旧碰撞框对齐。
+旧方块显示和选中/交互变色脚本的 Renderer 引用要同步调整；不建议直接删除旧箱体或直接替换 Sprite 而不检查大小。
+
+三、组合件怎么切换
+Gate_Closed/Open：同一门框 + GateShutter 子物体。Open 版本已隐藏门板；可以只用 Closed 版本，在逻辑里移动或隐藏 GateShutter。
+Core_Active/Dormant：控制 CoreEnergy 子物体是否启用。核心外壳保留。
+Hazard_Active/Dormant：控制 ElectricArc 子物体是否启用。电弧是静态图，不是已做好的逐帧动画。
+终端、对接板、信标目前各提供一套外观，可以用 SpriteRenderer.Color 调暗表现未激活；这是整体调色，尚未提供独立灯光图层。
+
+四、碰撞与玩法
+本包是可直接摆放的美术素材。未添加门锁、受伤、存档、供电或通关逻辑，也没有给装饰默认添加碰撞，避免误挡玩家。
+横梁若作为实体平台，优先保留原 Tilemap 的平台碰撞，把美术贴在平台前；确实独立使用时再加 BoxCollider2D 对齐顶部。
+门框或核心有透明空洞，不要用一个大 BoxCollider2D 把空洞全部封住。角色阻挡只给门板；框体要碰撞时用左右/顶部几个小框。
+层级默认：大部分背景装饰为负 Order in Layer；箱体和机关在 4–7；角色目前是 10。必要时在 SpriteRenderer 调整，避免遮住角色。
+
+五、发给组员或另一个项目
+双击 GravityPropsV01.unitypackage，Unity 导入窗口点 Import。包内包含 PNG、Sprite 导入设置和全部 30 个 Prefab；不含测试脚本、现有关卡或玩家代码。
+仅需原图时使用 PNG 文件夹。最好用 unitypackage 保留锚点和大小。
+素材总览.html 可浏览中文说明、建议尺寸及深/浅背景效果；prop-catalog.png 是 Unity 实际渲染的总览。
+
+素材清单（宽 × 高，Unity 单位，按实际主体算）：
+重力交换箱 | GravityCrate.png | 1.60 × 1.59 | 交换上下重力的箱体外观；接到现有 GravityBox 的显示层。
+重力箱对接板 | DockingPlate.png | 2.10 × 0.34 | 运输车间、实验室；地面或天花板的对接位置。
+闸门框 | GateFrame.png | 3.21 × 5.00 | 房间分隔闸门外框，中间镂空。
+闸门叶 | GateShutter.png | 2.04 × 4.20 | 独立门板，开门时移动或隐藏它。
+供能／档案终端 | PowerTerminal.png | 1.25 × 0.99 | 控制室供电、档案室阅读、结局终端共用。
+检查点信标 | CheckpointBeacon.png | 0.66 × 1.80 | 安全点、重置点的视觉标记。
+固定电场发射器 | HazardEmitter.png | 3.40 × 0.97 | 地面固定电场的机械底座。
+重力核心外壳 | CoreHousing.png | 4.81 × 5.00 | 核心室主装置，中心镂空。
+废弃运输车 | CargoTrolley.png | 3.30 × 0.59 | 运输车间的废弃平板车，可与箱体组合。
+断裂楼板横梁 | StructuralBeam.png | 4.50 × 0.57 | 楼板、桥面和落脚平台的工业外观。
+破损承重柱 | BrokenColumn.png | 1.46 × 5.00 | 入口、大厅或车间的承重结构。
+残损货架 | CargoRack.png | 4.20 × 2.38 | 运输车间背景；可摆箱体或能源单元。
+报废升降舱 | ElevatorCabin.png | 3.40 × 3.68 | 竖井废升降舱，内部镂空。
+能源弯管 | PipeElbow.png | 2.44 × 2.50 | 背景能源管线，旋转组合使用。
+垂落电缆 | CableBundle.png | 1.93 × 4.00 | 竖井或破损天花板垂挂。
+断裂护栏 | BrokenRailing.png | 3.00 × 0.84 | 高台边缘与背景栈道点缀。
+碎石堆 | RubblePile.png | 2.30 × 0.57 | 建筑断口、地表入口和地面碎石。
+固定式能源单元 | EnergyCell.png | 0.80 × 1.28 | 终端旁或货架上的能源装置装饰。
+核心能量层 | CoreEnergy.png | 2.54 × 2.60 | 独立核心能量层，可显示／隐藏。
+电弧特效层 | ElectricArc.png | 3.00 × 0.58 | 单张电弧效果，可显隐或做轻微闪烁。
+苔藓草簇 | MossPatch.png | 1.80 × 0.38 | 平台接缝与地表草簇，可少量重叠摆放。
+垂挂藤蔓 | HangingVine.png | 0.66 × 3.00 | 入口墙体、洞顶或破损设施垂挂。
+降落区大树 | LandingTree.png | 7.00 × 6.37 | 地表降落区左侧大树。
+基地入口遗迹 | RuinedEntranceFrame.png | 6.50 × 5.62 | 地表进入能源基地的入口。
+
+验证：24 张 PNG 含真实透明通道；30 个 Prefab 的 Sprite 引用和 Shader 检查通过；预览在隔离场景渲染，本轮没有保存或改动现有地图。

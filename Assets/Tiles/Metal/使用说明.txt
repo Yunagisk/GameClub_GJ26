@@ -1,0 +1,9 @@
+金属瓦片：5张用户原图均192×64，保持原始像素和颜色。
+PPU=64；Grid cell=1×1；每张切3片64×64，共15片Tile。
+在Tile Palette窗口选择MetalPalette；若未自动显示，可从Assets/Tiles/Metal/Palettes选中MetalPalette.prefab。
+五行依次为Left、Right、Middle、Cracked、Vent，每行从左到右为原图3段。
+连续横梁建议：Left_0作左端，Middle/Cracked变化铺中间，Right_2作右端。
+Vent三片可作为3格宽完整格栅放到无碰撞背景Tilemap；Metal_Vent_Full另供SpriteRenderer装饰。
+实体Tile均设Grid碰撞；要成为可碰撞地面，目标Tilemap仍需配置TilemapCollider2D及对应Ground层。
+纯背景装饰放到没有Collider的Tilemap；这5图完全不透明。
+若需要翻转单格，先将该格TileFlags设为None再应用TransformMatrix。

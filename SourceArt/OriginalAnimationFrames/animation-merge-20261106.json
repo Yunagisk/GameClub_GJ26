@@ -1,0 +1,488 @@
+{
+    "success": true,
+    "error": "",
+    "configuredPlayers": 1,
+    "animations": [
+        {
+            "sourceFolder": "待机",
+            "texture": "Assets/Sprite/Player/待机.png",
+            "clip": "Assets/Animations/Player/Clips/Idle.anim",
+            "count": 10,
+            "fps": 12.0,
+            "length": 0.9166666269302368,
+            "loop": true
+        },
+        {
+            "sourceFolder": "冲刺-带粒子",
+            "texture": "Assets/Sprite/Player/冲刺-带粒子.png",
+            "clip": "Assets/Animations/Player/Clips/Dash.anim",
+            "count": 13,
+            "fps": 24.0,
+            "length": 0.5833333730697632,
+            "loop": false
+        },
+        {
+            "sourceFolder": "死亡",
+            "texture": "Assets/Sprite/Player/死亡.png",
+            "clip": "Assets/Animations/Player/Clips/Death.anim",
+            "count": 13,
+            "fps": 18.0,
+            "length": 0.7777777910232544,
+            "loop": false
+        },
+        {
+            "sourceFolder": "重生",
+            "texture": "Assets/Sprite/Player/重生.png",
+            "clip": "Assets/Animations/Player/Clips/Revive.anim",
+            "count": 16,
+            "fps": 18.0,
+            "length": 0.944444477558136,
+            "loop": false
+        },
+        {
+            "sourceFolder": "翻转",
+            "texture": "Assets/Sprite/Player/翻转.png",
+            "clip": "Assets/Animations/Player/Clips/GravityFlip.anim",
+            "count": 7,
+            "fps": 20.0,
+            "length": 0.4000000059604645,
+            "loop": false
+        },
+        {
+            "sourceFolder": "跳跃",
+            "texture": "Assets/Sprite/Player/跳跃-下降.png",
+            "clip": "Assets/Animations/Player/Clips/Fall.anim",
+            "count": 1,
+            "fps": 12.0,
+            "length": 0.1666666716337204,
+            "loop": true
+        }
+    ],
+    "originalFiles": [
+        {
+            "source": "animation/交互/交互-1.png",
+            "archived": "SourceArt/OriginalAnimationFrames/交互/交互-1.png",
+            "sha256": "a2a6505191441c1e31e75dd056ab7ecc772181b48af683be88dfdacdf27d39dd"
+        },
+        {
+            "source": "animation/交互/交互-10.png",
+            "archived": "SourceArt/OriginalAnimationFrames/交互/交互-10.png",
+            "sha256": "790e587d5bd1c66e919f4f651e152680d87f417760e7bfe5f301042295a3454c"
+        },
+        {
+            "source": "animation/交互/交互-11.png",
+            "archived": "SourceArt/OriginalAnimationFrames/交互/交互-11.png",
+            "sha256": "351b9a77ab5847a3aba229b149c2e694e56856e4772e12fe5fe40f5da96700a5"
+        },
+        {
+            "source": "animation/交互/交互-2.png",
+            "archived": "SourceArt/OriginalAnimationFrames/交互/交互-2.png",
+            "sha256": "e12d5526ae8e9403d79fc4ce00c7921367c5acb2f2908c6644fab68bbe595c70"
+        },
+        {
+            "source": "animation/交互/交互-3.png",
+            "archived": "SourceArt/OriginalAnimationFrames/交互/交互-3.png",
+            "sha256": "ec7fcfa4321361fd86bb56e5fc80f1e4d8d52a3ee1a3786265c5e485030e5324"
+        },
+        {
+            "source": "animation/交互/交互-4.png",
+            "archived": "SourceArt/OriginalAnimationFrames/交互/交互-4.png",
+            "sha256": "351b9a77ab5847a3aba229b149c2e694e56856e4772e12fe5fe40f5da96700a5"
+        },
+        {
+            "source": "animation/交互/交互-5.png",
+            "archived": "SourceArt/OriginalAnimationFrames/交互/交互-5.png",
+            "sha256": "790e587d5bd1c66e919f4f651e152680d87f417760e7bfe5f301042295a3454c"
+        },
+        {
+            "source": "animation/交互/交互-6.png",
+            "archived": "SourceArt/OriginalAnimationFrames/交互/交互-6.png",
+            "sha256": "441d32912d8d2b8ca1bd2ba26b8039fcedd8e9fc4a5941fd210b2521c536cb6b"
+        },
+        {
+            "source": "animation/交互/交互-7.png",
+            "archived": "SourceArt/OriginalAnimationFrames/交互/交互-7.png",
+            "sha256": "a16495a309bf0f5ebd3a5f4ba6793a45234721ee16b5ed603f1aa3f8cb2f1eae"
+        },
+        {
+            "source": "animation/交互/交互-8.png",
+            "archived": "SourceArt/OriginalAnimationFrames/交互/交互-8.png",
+            "sha256": "f4294c2c5c8565530eeb26b6e944c1be02e35aa1eaddb1c7af90c609310fc384"
+        },
+        {
+            "source": "animation/交互/交互-9.png",
+            "archived": "SourceArt/OriginalAnimationFrames/交互/交互-9.png",
+            "sha256": "441d32912d8d2b8ca1bd2ba26b8039fcedd8e9fc4a5941fd210b2521c536cb6b"
+        },
+        {
+            "source": "animation/冲刺-带粒子/冲刺-1.png",
+            "archived": "SourceArt/OriginalAnimationFrames/冲刺-带粒子/冲刺-1.png",
+            "sha256": "60a0f5793b2a11e65aa9fced1b6783fff35bdd39ca09da5c4673d36744cb6b9c"
+        },
+        {
+            "source": "animation/冲刺-带粒子/冲刺-10.png",
+            "archived": "SourceArt/OriginalAnimationFrames/冲刺-带粒子/冲刺-10.png",
+            "sha256": "0e99e9f63680b3b9c6082f7f8f32ab195c7452b81c79f93bc26b8517239385fb"
+        },
+        {
+            "source": "animation/冲刺-带粒子/冲刺-11.png",
+            "archived": "SourceArt/OriginalAnimationFrames/冲刺-带粒子/冲刺-11.png",
+            "sha256": "b21964b7574f040a8e053f3bab7f1c5f76afa149b89da8e8ccb1edf082c3a9a2"
+        },
+        {
+            "source": "animation/冲刺-带粒子/冲刺-12.png",
+            "archived": "SourceArt/OriginalAnimationFrames/冲刺-带粒子/冲刺-12.png",
+            "sha256": "e5a16fbe681b78616182b97cad39ed28b775d632467f767e54a65d3fabb1301b"
+        },
+        {
+            "source": "animation/冲刺-带粒子/冲刺-13.png",
+            "archived": "SourceArt/OriginalAnimationFrames/冲刺-带粒子/冲刺-13.png",
+            "sha256": "17c95b2201328d24da15641079b60c13e114b6471368d3f10b841a9fc2fa3296"
+        },
+        {
+            "source": "animation/冲刺-带粒子/冲刺-2.png",
+            "archived": "SourceArt/OriginalAnimationFrames/冲刺-带粒子/冲刺-2.png",
+            "sha256": "b791094fb7006eaa1dd7f05a7218c6390c6c23b9c9400bde71f5c009b1dd43cd"
+        },
+        {
+            "source": "animation/冲刺-带粒子/冲刺-3.png",
+            "archived": "SourceArt/OriginalAnimationFrames/冲刺-带粒子/冲刺-3.png",
+            "sha256": "3669b4132cb85bce671fea7b76b59f7d988f0cee6dc5bb0cc2c316feec6c72a1"
+        },
+        {
+            "source": "animation/冲刺-带粒子/冲刺-4.png",
+            "archived": "SourceArt/OriginalAnimationFrames/冲刺-带粒子/冲刺-4.png",
+            "sha256": "972d54e2fc9eee55c84127955cd18113bff31cca2581b0d9e288bc8a4f5d3e27"
+        },
+        {
+            "source": "animation/冲刺-带粒子/冲刺-5.png",
+            "archived": "SourceArt/OriginalAnimationFrames/冲刺-带粒子/冲刺-5.png",
+            "sha256": "ea16b2027cab418197eaf694f3ce0a2c41b67cce4600e3b9728a71ce3217e1be"
+        },
+        {
+            "source": "animation/冲刺-带粒子/冲刺-6.png",
+            "archived": "SourceArt/OriginalAnimationFrames/冲刺-带粒子/冲刺-6.png",
+            "sha256": "70d9648909aca5bfa68998926946c9f39763ee2aa07cd770880f45e2cf362e58"
+        },
+        {
+            "source": "animation/冲刺-带粒子/冲刺-7.png",
+            "archived": "SourceArt/OriginalAnimationFrames/冲刺-带粒子/冲刺-7.png",
+            "sha256": "bde2aaa65f5bf8e7a3b19556ff1b833c0cad78450fb066166b7d223d649dc625"
+        },
+        {
+            "source": "animation/冲刺-带粒子/冲刺-8.png",
+            "archived": "SourceArt/OriginalAnimationFrames/冲刺-带粒子/冲刺-8.png",
+            "sha256": "4d1c9fafe41ec38fb1a6f00d633aa6cee1bff298b7af7990325613d19c1d4ee6"
+        },
+        {
+            "source": "animation/冲刺-带粒子/冲刺-9.png",
+            "archived": "SourceArt/OriginalAnimationFrames/冲刺-带粒子/冲刺-9.png",
+            "sha256": "ed8b95c2f5493631221a8a1d0a6ddb81c9e8e1529d8b71de5b2caa1c84ae930f"
+        },
+        {
+            "source": "animation/冲刺-有衔接/冲刺-1.png",
+            "archived": "SourceArt/OriginalAnimationFrames/冲刺-有衔接/冲刺-1.png",
+            "sha256": "f5d1396cca3930e87871961d7ee3b67b72c1e5394d1114d59bd74261683d1a8c"
+        },
+        {
+            "source": "animation/冲刺-有衔接/冲刺-10.png",
+            "archived": "SourceArt/OriginalAnimationFrames/冲刺-有衔接/冲刺-10.png",
+            "sha256": "10b9d13b4f032412daa75d3be5e11943eb60673c10936c0311d28e46ff73ed15"
+        },
+        {
+            "source": "animation/冲刺-有衔接/冲刺-11.png",
+            "archived": "SourceArt/OriginalAnimationFrames/冲刺-有衔接/冲刺-11.png",
+            "sha256": "b21964b7574f040a8e053f3bab7f1c5f76afa149b89da8e8ccb1edf082c3a9a2"
+        },
+        {
+            "source": "animation/冲刺-有衔接/冲刺-12.png",
+            "archived": "SourceArt/OriginalAnimationFrames/冲刺-有衔接/冲刺-12.png",
+            "sha256": "e5a16fbe681b78616182b97cad39ed28b775d632467f767e54a65d3fabb1301b"
+        },
+        {
+            "source": "animation/冲刺-有衔接/冲刺-13.png",
+            "archived": "SourceArt/OriginalAnimationFrames/冲刺-有衔接/冲刺-13.png",
+            "sha256": "17c95b2201328d24da15641079b60c13e114b6471368d3f10b841a9fc2fa3296"
+        },
+        {
+            "source": "animation/冲刺-有衔接/冲刺-14.png",
+            "archived": "SourceArt/OriginalAnimationFrames/冲刺-有衔接/冲刺-14.png",
+            "sha256": "f5d1396cca3930e87871961d7ee3b67b72c1e5394d1114d59bd74261683d1a8c"
+        },
+        {
+            "source": "animation/冲刺-有衔接/冲刺-2.png",
+            "archived": "SourceArt/OriginalAnimationFrames/冲刺-有衔接/冲刺-2.png",
+            "sha256": "17c95b2201328d24da15641079b60c13e114b6471368d3f10b841a9fc2fa3296"
+        },
+        {
+            "source": "animation/冲刺-有衔接/冲刺-3.png",
+            "archived": "SourceArt/OriginalAnimationFrames/冲刺-有衔接/冲刺-3.png",
+            "sha256": "e5a16fbe681b78616182b97cad39ed28b775d632467f767e54a65d3fabb1301b"
+        },
+        {
+            "source": "animation/冲刺-有衔接/冲刺-4.png",
+            "archived": "SourceArt/OriginalAnimationFrames/冲刺-有衔接/冲刺-4.png",
+            "sha256": "dfa01a2f54208a59456f70041d86b0b9683d4c3a056847e01a9d49155b9d713a"
+        },
+        {
+            "source": "animation/冲刺-有衔接/冲刺-5.png",
+            "archived": "SourceArt/OriginalAnimationFrames/冲刺-有衔接/冲刺-5.png",
+            "sha256": "b21964b7574f040a8e053f3bab7f1c5f76afa149b89da8e8ccb1edf082c3a9a2"
+        },
+        {
+            "source": "animation/冲刺-有衔接/冲刺-6.png",
+            "archived": "SourceArt/OriginalAnimationFrames/冲刺-有衔接/冲刺-6.png",
+            "sha256": "10b9d13b4f032412daa75d3be5e11943eb60673c10936c0311d28e46ff73ed15"
+        },
+        {
+            "source": "animation/冲刺-有衔接/冲刺-7.png",
+            "archived": "SourceArt/OriginalAnimationFrames/冲刺-有衔接/冲刺-7.png",
+            "sha256": "9c4f935ca14cd3d2c814d2c9c1e9410bf35445d8d63f5033d2c2dc0de387acec"
+        },
+        {
+            "source": "animation/冲刺-有衔接/冲刺-8.png",
+            "archived": "SourceArt/OriginalAnimationFrames/冲刺-有衔接/冲刺-8.png",
+            "sha256": "106a5f63298ca4c5db7784bd200185ae4ac22d6f257d38ea7c573f81f41a68b8"
+        },
+        {
+            "source": "animation/冲刺-有衔接/冲刺-9.png",
+            "archived": "SourceArt/OriginalAnimationFrames/冲刺-有衔接/冲刺-9.png",
+            "sha256": "feb0426e6720a2d69c0f637baf85dc3aae6ea3e081e428e02689489063c41f63"
+        },
+        {
+            "source": "animation/待机/待机-1.png",
+            "archived": "SourceArt/OriginalAnimationFrames/待机/待机-1.png",
+            "sha256": "a2a6505191441c1e31e75dd056ab7ecc772181b48af683be88dfdacdf27d39dd"
+        },
+        {
+            "source": "animation/待机/待机-10.png",
+            "archived": "SourceArt/OriginalAnimationFrames/待机/待机-10.png",
+            "sha256": "7c52dd6e9b197acfe9e824fcaa6a8fda42e829c7b38966411af2cc461f92b74c"
+        },
+        {
+            "source": "animation/待机/待机-2.png",
+            "archived": "SourceArt/OriginalAnimationFrames/待机/待机-2.png",
+            "sha256": "3911916f44047d22238c4edce9e29359e27ad2de3bb671d84d47f1e6e38687bc"
+        },
+        {
+            "source": "animation/待机/待机-3.png",
+            "archived": "SourceArt/OriginalAnimationFrames/待机/待机-3.png",
+            "sha256": "b5816d27dbaed55cc555c0611beaefe0c8cb8824412130e5d4b6d7f925e7fe65"
+        },
+        {
+            "source": "animation/待机/待机-4.png",
+            "archived": "SourceArt/OriginalAnimationFrames/待机/待机-4.png",
+            "sha256": "b5816d27dbaed55cc555c0611beaefe0c8cb8824412130e5d4b6d7f925e7fe65"
+        },
+        {
+            "source": "animation/待机/待机-5.png",
+            "archived": "SourceArt/OriginalAnimationFrames/待机/待机-5.png",
+            "sha256": "2ee602f0837edee63523680dff9406f3df96818b6ebf2c10617e8421475f7623"
+        },
+        {
+            "source": "animation/待机/待机-6.png",
+            "archived": "SourceArt/OriginalAnimationFrames/待机/待机-6.png",
+            "sha256": "66a08203fe53103ba7ad749dc1f3af9a60878ae807b186baa842af82b0447d99"
+        },
+        {
+            "source": "animation/待机/待机-7.png",
+            "archived": "SourceArt/OriginalAnimationFrames/待机/待机-7.png",
+            "sha256": "8f5fa3b27f9b1dc8f9a3d93634e3945a7a9b0cc6c381748fa5d7304dbde25560"
+        },
+        {
+            "source": "animation/待机/待机-8.png",
+            "archived": "SourceArt/OriginalAnimationFrames/待机/待机-8.png",
+            "sha256": "5b16d8f65abc3540f40e354c16381a6516c605d913318f01864162f526c80051"
+        },
+        {
+            "source": "animation/待机/待机-9.png",
+            "archived": "SourceArt/OriginalAnimationFrames/待机/待机-9.png",
+            "sha256": "537d004bac084ff94c953ea364ba43e19a285445bf8ee6733153439f90e36b67"
+        },
+        {
+            "source": "animation/死亡/死亡-1.png",
+            "archived": "SourceArt/OriginalAnimationFrames/死亡/死亡-1.png",
+            "sha256": "a2a6505191441c1e31e75dd056ab7ecc772181b48af683be88dfdacdf27d39dd"
+        },
+        {
+            "source": "animation/死亡/死亡-10.png",
+            "archived": "SourceArt/OriginalAnimationFrames/死亡/死亡-10.png",
+            "sha256": "f8bed3c274f32f9db73ec404f84506eb9cd00fe79c7cf730cc195270b56e5d5f"
+        },
+        {
+            "source": "animation/死亡/死亡-11.png",
+            "archived": "SourceArt/OriginalAnimationFrames/死亡/死亡-11.png",
+            "sha256": "ceb7298ca0912449e4de00719b1afdd1b931165e9b8ce2a1ed90c8d516db45a0"
+        },
+        {
+            "source": "animation/死亡/死亡-12.png",
+            "archived": "SourceArt/OriginalAnimationFrames/死亡/死亡-12.png",
+            "sha256": "49e056e00138210c8878b49a20e7d65025d13081d5645822474d236e5516854e"
+        },
+        {
+            "source": "animation/死亡/死亡-13.png",
+            "archived": "SourceArt/OriginalAnimationFrames/死亡/死亡-13.png",
+            "sha256": "5337a4f6a64a4ea2b6b486a97e83a8e6dcffdd577536f7f462e9126753db0081"
+        },
+        {
+            "source": "animation/死亡/死亡-2.png",
+            "archived": "SourceArt/OriginalAnimationFrames/死亡/死亡-2.png",
+            "sha256": "28835338dc8d05199593b3473f009b7847b71ca12761e1fd20723d6137e0e0cf"
+        },
+        {
+            "source": "animation/死亡/死亡-3.png",
+            "archived": "SourceArt/OriginalAnimationFrames/死亡/死亡-3.png",
+            "sha256": "e83d8a27734533d6541bb3ed9d89b144a4a64b94866488f126874e229756e1ee"
+        },
+        {
+            "source": "animation/死亡/死亡-4.png",
+            "archived": "SourceArt/OriginalAnimationFrames/死亡/死亡-4.png",
+            "sha256": "d51cb9e70c42e3b2dee814248cdfb26566d77bdf22e877ef1feb0842c4906b8d"
+        },
+        {
+            "source": "animation/死亡/死亡-5.png",
+            "archived": "SourceArt/OriginalAnimationFrames/死亡/死亡-5.png",
+            "sha256": "e521b17b908d5fdbe2164e8f5b99d3697917776f47382e7e31540acbe4630244"
+        },
+        {
+            "source": "animation/死亡/死亡-6.png",
+            "archived": "SourceArt/OriginalAnimationFrames/死亡/死亡-6.png",
+            "sha256": "6cfe34c872aae5c2dc74488be5c2c1423a9a9b225b07fda6685d6ce9916277ea"
+        },
+        {
+            "source": "animation/死亡/死亡-7.png",
+            "archived": "SourceArt/OriginalAnimationFrames/死亡/死亡-7.png",
+            "sha256": "91febb0e79cb0497ac1dcaef57b2ac8b10214ad16f21e3d81ba071a8e1ab0a75"
+        },
+        {
+            "source": "animation/死亡/死亡-8.png",
+            "archived": "SourceArt/OriginalAnimationFrames/死亡/死亡-8.png",
+            "sha256": "5671e24da3fdb21fce95c2555129c35ba9c317f1667f870da56cfb850044bbec"
+        },
+        {
+            "source": "animation/死亡/死亡-9.png",
+            "archived": "SourceArt/OriginalAnimationFrames/死亡/死亡-9.png",
+            "sha256": "db1d44ab3467d12a33438895dec7e26bca728d1075f6ee21d055bfa59708e851"
+        },
+        {
+            "source": "animation/翻转/翻转-1.png",
+            "archived": "SourceArt/OriginalAnimationFrames/翻转/翻转-1.png",
+            "sha256": "3d948ada3a348c8c543d1c0b72fba1786d53aa94c4746a57d2577e11f2e835c5"
+        },
+        {
+            "source": "animation/翻转/翻转-2.png",
+            "archived": "SourceArt/OriginalAnimationFrames/翻转/翻转-2.png",
+            "sha256": "55761a04d6aefcde3a4fbaffe090542482ef80955cdd1fee1daa3c89e8997e9c"
+        },
+        {
+            "source": "animation/翻转/翻转-3.png",
+            "archived": "SourceArt/OriginalAnimationFrames/翻转/翻转-3.png",
+            "sha256": "331e5693410de3afd46776ddf57330543b104d5bd73e318f8bcd5a6a885dd0bd"
+        },
+        {
+            "source": "animation/翻转/翻转-4.png",
+            "archived": "SourceArt/OriginalAnimationFrames/翻转/翻转-4.png",
+            "sha256": "6588a450791ae3d29f280377cf6ca938734e23f81d7bed5d5dfe2fc7de8d411b"
+        },
+        {
+            "source": "animation/翻转/翻转-5.png",
+            "archived": "SourceArt/OriginalAnimationFrames/翻转/翻转-5.png",
+            "sha256": "b47675a3969982b9838b8af0c334a3f2e10a672d8acb8fa25772dcb26b25e595"
+        },
+        {
+            "source": "animation/翻转/翻转-6.png",
+            "archived": "SourceArt/OriginalAnimationFrames/翻转/翻转-6.png",
+            "sha256": "5aa2d0b555105ac52a4be0f5db2eeefec802309b2b9a48fff8a5ed0ac8279f45"
+        },
+        {
+            "source": "animation/翻转/翻转-7.png",
+            "archived": "SourceArt/OriginalAnimationFrames/翻转/翻转-7.png",
+            "sha256": "fd1374f207fb29f165eb33f41be1b9b924dfd206f003a2fd3d73f6d4aa6da971"
+        },
+        {
+            "source": "animation/跳跃/跳跃-下降.png",
+            "archived": "SourceArt/OriginalAnimationFrames/跳跃/跳跃-下降.png",
+            "sha256": "15ae7c6f0426fcfd2881c3a8da353298ed0d51bd6ef3d839dbb76f613952fdbf"
+        },
+        {
+            "source": "animation/重生/重生-1.png",
+            "archived": "SourceArt/OriginalAnimationFrames/重生/重生-1.png",
+            "sha256": "5337a4f6a64a4ea2b6b486a97e83a8e6dcffdd577536f7f462e9126753db0081"
+        },
+        {
+            "source": "animation/重生/重生-10.png",
+            "archived": "SourceArt/OriginalAnimationFrames/重生/重生-10.png",
+            "sha256": "a3db31d4212408afc966c4d83381f8a0c7ae3a61016a132912bcbdeb1fd79bc3"
+        },
+        {
+            "source": "animation/重生/重生-11.png",
+            "archived": "SourceArt/OriginalAnimationFrames/重生/重生-11.png",
+            "sha256": "53deeb9978709fbd1246111cc3e0286ccae811d1761c1a5556c7639a8b997de3"
+        },
+        {
+            "source": "animation/重生/重生-12.png",
+            "archived": "SourceArt/OriginalAnimationFrames/重生/重生-12.png",
+            "sha256": "e6484602d4dc5323793b93cfe92aca4634a65e4f933e3d689e12468e19e515a3"
+        },
+        {
+            "source": "animation/重生/重生-13.png",
+            "archived": "SourceArt/OriginalAnimationFrames/重生/重生-13.png",
+            "sha256": "a4f5b84d2cbfcd4b08f3bdea13ef8ca9f14d5be4ab25526edca4667a9f6a994f"
+        },
+        {
+            "source": "animation/重生/重生-14.png",
+            "archived": "SourceArt/OriginalAnimationFrames/重生/重生-14.png",
+            "sha256": "6083c5cc4b6d91b46b65249e5574f3533cefa119f9b661e669d9df483777428d"
+        },
+        {
+            "source": "animation/重生/重生-15.png",
+            "archived": "SourceArt/OriginalAnimationFrames/重生/重生-15.png",
+            "sha256": "8fdf73246397cb7961f03711062d8e2b75d7d381ca84aa2f89f1e214524f12c4"
+        },
+        {
+            "source": "animation/重生/重生-16.png",
+            "archived": "SourceArt/OriginalAnimationFrames/重生/重生-16.png",
+            "sha256": "a2a6505191441c1e31e75dd056ab7ecc772181b48af683be88dfdacdf27d39dd"
+        },
+        {
+            "source": "animation/重生/重生-2.png",
+            "archived": "SourceArt/OriginalAnimationFrames/重生/重生-2.png",
+            "sha256": "130d9d2bacc4450124a9b7eaf5cd3077e4bac57acf9fb5a9d2bb8dc813d4099b"
+        },
+        {
+            "source": "animation/重生/重生-3.png",
+            "archived": "SourceArt/OriginalAnimationFrames/重生/重生-3.png",
+            "sha256": "9b6ba91ce0e186f411fd10c158b4061bd2d9290ce0ef5632666edb2311276a01"
+        },
+        {
+            "source": "animation/重生/重生-4.png",
+            "archived": "SourceArt/OriginalAnimationFrames/重生/重生-4.png",
+            "sha256": "316e308d5940a9a2403c20ead3565d18d55f7ab47fd46d8cace05665446dcfc0"
+        },
+        {
+            "source": "animation/重生/重生-5.png",
+            "archived": "SourceArt/OriginalAnimationFrames/重生/重生-5.png",
+            "sha256": "649fc6b3363e55f9982674e3a96aebf7a9a7730ad0fcb494e2dfea150e4cce22"
+        },
+        {
+            "source": "animation/重生/重生-6.png",
+            "archived": "SourceArt/OriginalAnimationFrames/重生/重生-6.png",
+            "sha256": "bcc5c4e4b9d00b82f4247c194de4d99950936179e4b6a1bcf2458aa331c3af73"
+        },
+        {
+            "source": "animation/重生/重生-7.png",
+            "archived": "SourceArt/OriginalAnimationFrames/重生/重生-7.png",
+            "sha256": "a25641de69345f3d1e64767ac4d44f85aeb0b207b78bd04fcc948f6a5f44217c"
+        },
+        {
+            "source": "animation/重生/重生-8.png",
+            "archived": "SourceArt/OriginalAnimationFrames/重生/重生-8.png",
+            "sha256": "86ec8f007ebc6c4902dec91ee4436e9be6e414d0510bb86fcbfac4393075925e"
+        },
+        {
+            "source": "animation/重生/重生-9.png",
+            "archived": "SourceArt/OriginalAnimationFrames/重生/重生-9.png",
+            "sha256": "4a5888f333e66bfe89d7aca1f8f6fb41696d3d52c51d9dbaca77b4c192acdcc2"
+        }
+    ]
+}

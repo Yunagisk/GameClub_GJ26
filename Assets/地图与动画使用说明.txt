@@ -1,0 +1,91 @@
+Heptagram：Player 动画与地图 V02
+完成日期：2026-11-04
+
+一、直接运行
+打开 D:/CodeProject/GameClub_GJ26/Assets/Scenes/TestScene.unity。
+点击 Play，再点击 Game 窗口使它接收输入。
+A / D：左右移动；W：跳跃（按住跳得更高）；左右 Shift：冲刺。
+鼠标左键：选中重力箱；鼠标右键：交换上下重力。
+F：靠近交互物后交互。当前重力箱也支持 F 的标记反馈。
+F 附近没有可交互物，或冲刺正在冷却时，不会错误播放成功动作。
+
+二、Player 动画
+根 Player 保留原刚体、胶囊碰撞和运动脚本；跳跃力度20、重力倍率3.5保留。
+Player/Visual 是单独的显示子对象，包含 SpriteRenderer 与 Animator。
+根 Player 原白色占位 SpriteRenderer 已关闭，可按需要保留或删除。
+角色图片原本朝左；PlayerVisuals 已处理左右镜像与倒置重力时上下翻转。
+Visual 的缩放约0.121，是为了把2048像素动画帧里的角色匹配到原先高2单位的碰撞体。
+
+资源位置：
+D:/CodeProject/GameClub_GJ26/Assets/Animations/Player/Player.controller
+D:/CodeProject/GameClub_GJ26/Assets/Animations/Player/Clips/
+
+动画状态：
+Idle：借用跳跃第7帧站立姿势，目前是静态待机，等美术提供待机动画后可替换。
+Run：现有6帧行走，循环。
+Rise：跳跃第2–3帧，离开当前重力承接面时播放。
+Fall：跳跃第4–5帧，朝当前重力承接面下落时播放。
+Land：跳跃第6–7帧，落地短动画，接移动或再次跳跃会打断。
+Dash：14帧“冲刺-有衔接”，42fps，约0.333秒。
+Interact：11帧交互，18fps，约0.611秒；移动、离地或翻转可打断。
+Dash_Short：旧3帧冲刺也已制成片段，作为备用，不在默认状态机中播放。
+
+Animator 参数 State：0待机 / 1行走 / 2起跳 / 3下落 / 4落地 / 5冲刺 / 6交互。
+参数由 PlayerVisuals 自动写入；游戏运行时不需要手工改参数。
+成功冲刺/交互才触发动作；动作不锁住物理控制。
+切换冲刺、交互或落地片段时，同时替换 Animator 对应状态的 Motion 与 PlayerVisuals 上对应 Clip 引用，计时才能匹配。
+
+三、新地图在哪里
+场景中的 GravityBase_MapV02 是当前地图。
+01_Landing：起点与入口。
+02_EntranceHall：重力教学大厅。
+03_EntryShaft_Junction：入口竖井、分流及连接平台。
+04_TransportWorkshop：运输车间，下层主通道与上层回程。
+05_ControlRoom：控制室与返回楼梯。
+S_ArchiveAlcove：回程旁的可选档案夹层。
+06_GravityLaboratory：右侧实验室。
+07_DeepMaintenanceShaft：深层错位检修平台。
+08_GravityCoreChamber：核心室。
+
+每区 Ground 为有碰撞地形，Background 为暗色背景；
+BackgroundStructure_NoCollision 为低对比梁柱/货架，无碰撞。
+00_Backdrop_CameraSafety 是更远的一整层背景，覆盖镜头边界外，防止转场、下降、镜头缓动时漏出蓝底。
+背景均无碰撞。Ground 使用同步 CompositeCollider，继续手动画瓦片会自动更新碰撞。
+相机 Orthographic Size 保持约6.827，能在8单位高的交换房内看见上、下交换目标。
+
+四、如何继续铺
+在 Hierarchy 展开区域，选择它的 Ground 或 Background，
+在 Tile Palette 的 Active Target 确认选中的是同一层，再到 Scene 窗口画。
+仍可使用原 RockPalette。另提供 RockContinuousPalette：上方6×2是地面整组，下方6×2是背景整组。
+当前地图已使用连续材质，跨格纹理统一衔接；画出的轮廓和碰撞仍由瓦片决定。
+材质会统一使用整张岩石条带，所以逐格换 A_01/A_02 不会改变这套材质的局部图案。
+若新增其他种类地面，请单独建 Tilemap 并使用相应材质，不要混画在现有岩石层。
+
+材质位置：
+D:/CodeProject/GameClub_GJ26/Assets/Art/Materials/RockGroundContinuous.mat
+D:/CodeProject/GameClub_GJ26/Assets/Art/Materials/RockBackgroundContinuous.mat
+原始PNG未改。材质通过世界坐标连续混合取样减轻接缝和镜像重复花纹。
+Repeat Size 控制纹理大小；Texture Contrast 控制细节对比。
+背景明暗可继续在对应 Tilemap 的 Color 调整。
+
+五、备份
+PreviousLayout_Backup_DISABLED 保留你重铺前的 RockGrid 和原重力箱，当前关闭。
+要对比旧版，可先关闭 GravityBase_MapV02，再打开该备份组；Player出生点已移动，新旧地图位置不同，需移回旧出生点(-8.89,-6.90)。
+重铺前完整场景副本另外保存在：
+D:/CodeProject/GameClub_GJ26/Library/CodexGravityMapDelivery/before-map.unity
+首次动画接入前的 live 场景与原脚本保存在：
+D:/CodeProject/GameClub_GJ26/Library/CodexPlayerAnimationBackup/
+
+六、本版边界与验证
+已经完成：地图地形、室内背景、六个现有重力箱接入、角色动画与自动状态切换。
+门、对接板、检查点、剧情记录、核心美术与结局 UI 目前只留位置标记，还没有这些系统的完整逻辑。
+运输断桥下方保留可爬出的安全检修坑；在加入死亡/房间复位前，避免掉下去后卡死。这使重力路线成为更快路线，暂不强制解谜顺序。
+着陆区目前使用现有岩石和低对比结构占位，之后可继续换自然地表、大树、废墟美术。
+未进行完整新地图通关或最终发行包验证；这次按范围验证了关键地形与动画。
+
+已通过：
+1. Unity Play Mode 中22项动画状态/实际精灵帧检查，含正常和倒置重力、失败动作不重播、交互打断。
+2. 实际角色刚体与地图碰撞的12段关键跳跃模拟，包含控制室三级楼梯、运输坑左右出口、上层回程至分流。
+3. 九个区域的16:9相机渲染均无空背景像素；背景层无碰撞，出生点有地面且无穿墙。
+4. 连续岩石 Shader 编译通过。
+这些检查不等于完整剧情、完整机关或所有分辨率测试。
