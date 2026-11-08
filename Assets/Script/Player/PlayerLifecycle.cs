@@ -41,7 +41,11 @@ namespace GameClub.Player
             body.simulated = playing;
         }
 
-        public void PlaceForRevival(Vector3 position)
+        public void PlaceForRevival(Vector3 position) => PlaceAt(position, PlayerLifeState.Reviving);
+
+        public void PlaceForSceneEntry(Vector3 position) => PlaceAt(position, PlayerLifeState.Restoring);
+
+        private void PlaceAt(Vector3 position, PlayerLifeState state)
         {
             transform.position = position;
             body.position = position;
@@ -49,7 +53,7 @@ namespace GameClub.Player
             GetComponent<PlayerDash>().ResetForRespawn();
             GetComponent<PlayerHorizontalMotor>().ResetForRespawn();
             GetComponent<PlayerGroundProbe>().LeaveGround();
-            SetState(PlayerLifeState.Reviving);
+            SetState(state);
         }
     }
 }

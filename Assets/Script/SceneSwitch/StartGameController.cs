@@ -7,9 +7,11 @@ namespace GameClub.UI
     [DisallowMultipleComponent, RequireComponent(typeof(Button))]
     public sealed class StartGameController : MonoBehaviour
     {
-        [SerializeField] private string destinationScene = "TestScene";
+        [SerializeField] private string destinationScene = "EntryApproach";
         [SerializeField] private BlinkText promptBlink;
         [SerializeField] private Font openingFont;
+        [SerializeField] private Sprite openingBackground;
+        [SerializeField] private Sprite openingNoise;
         [SerializeField, TextArea(3, 8)] private string openingText =
             "人类把这颗行星叫作地球。\n\n" +
             "我从轨道呼叫了七次，地表没有回应。勘查已经确认，人类灭绝了。但在一片废墟下，一座地下基地还在发出微弱的信号。\n\n" +
@@ -61,8 +63,7 @@ namespace GameClub.UI
 
             var shade = CreateElement("Opening briefing", canvas.transform, Vector2.zero, Vector2.one, typeof(Image));
             shade.GetComponent<Image>().color = new Color(.012f, .026f, .042f, .93f);
-            var panel = CreateElement("Briefing panel", shade.transform, new Vector2(.13f, .11f), new Vector2(.87f, .89f), typeof(Image));
-            panel.GetComponent<Image>().color = new Color(.037f, .071f, .097f, .97f);
+            var panel = CreateBriefingPanel(shade);
 
             var edge = CreateElement("Accent", panel.transform, new Vector2(.055f, .82f), new Vector2(.945f, .826f), typeof(Image));
             edge.GetComponent<Image>().color = new Color(.28f, .66f, .73f, .82f);
@@ -77,12 +78,45 @@ namespace GameClub.UI
             continueButton = proceed.GetComponent<Button>();
             continueButton.targetGraphic = graphic;
             continueButton.onClick.AddListener(LoadDestination);
-            AddLabel(proceed.transform, "Label", "进入基地", Vector2.zero, Vector2.one, 36, TextAnchor.MiddleCenter);
+            AddLabel(proceed.transform, "Label", "前往基地入口", Vector2.zero, Vector2.one, 36, TextAnchor.MiddleCenter);
 
             startButton.interactable = false;
             if (promptBlink) promptBlink.gameObject.SetActive(false);
             continueButton.Select();
             return true;
+        }
+
+        private RectTransform CreateBriefingPanel(RectTransform shade)
+        {
+            if (!openingBackground)
+            {
+                var fallback = CreateElement("Briefing panel", shade, new Vector2(.13f, .11f), new Vector2(.87f, .89f), typeof(Image));
+                fallback.GetComponent<Image>().color = new Color(.037f, .071f, .097f, .97f);
+                return fallback;
+            }
+
+            var safeArea = CreateElement("Electronic display bounds", shade, new Vector2(.055f, .055f), new Vector2(.945f, .945f));
+            var frame = CreateElement("Damaged electronic frame", safeArea, Vector2.zero, Vector2.one, typeof(Image), typeof(AspectRatioFitter));
+            var frameImage = frame.GetComponent<Image>();
+            frameImage.sprite = openingBackground;
+            frameImage.raycastTarget = false;
+
+            var aspect = frame.GetComponent<AspectRatioFitter>();
+            aspect.aspectRatio = openingBackground.rect.width / openingBackground.rect.height;
+            aspect.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
+
+            var panel = CreateElement("Briefing panel", frame, new Vector2(.078f, .324f), new Vector2(.923f, .855f), typeof(Image));
+            var screen = panel.GetComponent<Image>();
+            screen.color = new Color(.023f, .066f, .069f, .94f);
+            screen.raycastTarget = false;
+            if (openingNoise)
+            {
+                var noise = CreateElement("Screen interference", panel, Vector2.zero, Vector2.one, typeof(Image)).GetComponent<Image>();
+                noise.sprite = openingNoise;
+                noise.color = new Color(.48f, .65f, .63f, .16f);
+                noise.raycastTarget = false;
+            }
+            return panel;
         }
 
         private Text AddLabel(Transform parent, string name, string value, Vector2 min, Vector2 max, int fontSize, TextAnchor alignment)

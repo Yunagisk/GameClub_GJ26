@@ -218,8 +218,10 @@ namespace GameClub.Player
             PlayerVisualState next;
             if (life == PlayerLifeState.Dying)
                 next = deathClip ? PlayerVisualState.Death : PlayerVisualState.Idle;
-            else if (life == PlayerLifeState.Reviving || life == PlayerLifeState.Restoring)
+            else if (life == PlayerLifeState.Reviving)
                 next = reviveClip ? PlayerVisualState.Revive : PlayerVisualState.Idle;
+            else if (life == PlayerLifeState.Restoring)
+                next = PlayerVisualState.IdleReady;
             else if (Time.time < flipUntil)
                 next = PlayerVisualState.GravityFlip;
             else if (dashPoseActive)

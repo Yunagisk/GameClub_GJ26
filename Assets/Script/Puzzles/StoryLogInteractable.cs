@@ -1,5 +1,6 @@
 using System;
 using GameClub.Player;
+using GameClub.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -19,7 +20,9 @@ namespace GameClub.Puzzles
         public string transmitLabel = "发回母船";
         public string followUpTitle;
         [TextArea(3, 12)] public string followUpBody;
+        [SerializeField] private NoticePanelView noticePanelPrefab;
 
+        private NoticePanelView noticePanel;
         private PuzzleSession readerSession;
         private bool transmitted;
         private int openedFrame;
@@ -39,6 +42,14 @@ namespace GameClub.Puzzles
             readerSession = session;
             openedFrame = Time.frameCount;
             scroll = Vector2.zero;
+            if (!noticePanelPrefab || (kind != StoryLogKind.Notice && kind != StoryLogKind.Maintenance)) return;
+
+            if (!noticePanel) noticePanel = Instantiate(noticePanelPrefab);
+            string text = RequirementsMet() ? body : lockedBody;
+            if (string.IsNullOrWhiteSpace(text)) text = "记录暂不可读取。";
+            string category = kind == StoryLogKind.Notice ? "现场告示" : "检修手记";
+            noticePanel.Show(title, string.IsNullOrWhiteSpace(source) ? category : category + " · " + source,
+                text, "结束阅读", () => Close(true));
         }
 
         protected override void OnDisable()
@@ -87,6 +98,7 @@ namespace GameClub.Puzzles
 
         private void Close(bool finish)
         {
+            if (noticePanel) noticePanel.Hide();
             var session = readerSession;
             if (!session) return;
             bool complete = finish && session.IsReading(this) && !session.IsRespawning && !session.Completed
@@ -94,6 +106,11 @@ namespace GameClub.Puzzles
             readerSession = null;
             session.EndStory(this);
             if (complete) session.CompleteTransmission();
+        }
+
+        private void OnDestroy()
+        {
+            if (noticePanel) Destroy(noticePanel.gameObject);
         }
 
         [Serializable] private sealed class SavedState : InteractionState { public bool transmitted; }
@@ -115,6 +132,7 @@ namespace GameClub.Puzzles
 
         private void OnGUI()
         {
+            if (noticePanel && noticePanel.gameObject.activeSelf) return;
             if (!readerSession || !readerSession.IsReading(this) || Screen.width < 150 || Screen.height < 120) return;
             EnsureStyles();
             Matrix4x4 previousMatrix = GUI.matrix;

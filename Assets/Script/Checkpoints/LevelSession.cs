@@ -253,7 +253,7 @@ namespace GameClub.Player
                         respawnHandler = (ILevelRespawnHandler)handlers[0];
                         player = roomPlayers[0];
                         // Preserve the landing position on a fresh playthrough.
-                        player.PlaceForRevival(player.transform.position);
+                        player.PlaceForSceneEntry(player.transform.position);
                         Physics2D.SyncTransforms();
                     }
                     return true;
@@ -293,7 +293,8 @@ namespace GameClub.Player
                 Physics2D.SyncTransforms();
                 ValidateSpawn(spawn);
                 Vector3 warp = spawn - player.transform.position;
-                player.PlaceForRevival(spawn);
+                if (restore == null) player.PlaceForSceneEntry(spawn);
+                else player.PlaceForRevival(spawn);
                 Physics2D.SyncTransforms();
                 if (restore == null)
                 {
@@ -341,10 +342,10 @@ namespace GameClub.Player
             IsRestoring = false;
             Physics2D.simulationMode = normalSimulation;
             yield return null; // Camera aligns before the black overlay is removed.
-            float revivalTime = player ? player.reviveDuration : 0f;
+            float revivalTime = player && player.State == PlayerLifeState.Reviving ? player.reviveDuration : 0f;
             float duration = durationOverride >= 0f ? durationOverride : fadeInDuration;
             yield return Fade(0f, duration);
-            yield return new WaitForSecondsRealtime(Mathf.Max(0f, revivalTime - duration));
+            if (revivalTime > duration) yield return new WaitForSecondsRealtime(revivalTime - duration);
             if (player) player.SetState(PlayerLifeState.Playing);
             busy = false;
             overlay.BlocksInput = false;
